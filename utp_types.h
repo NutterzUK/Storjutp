@@ -70,10 +70,10 @@
 	typedef struct sockaddr_storage SOCKADDR_STORAGE;
 #endif
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(__CYGWIN__)
 	#define I64u "%I64u"
 #else
-	#define I64u "%Lu"
+	#define I64u "%llu"
 #endif
 
 #ifdef WIN32
