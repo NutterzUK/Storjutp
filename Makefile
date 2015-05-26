@@ -33,6 +33,9 @@ libutp.a: $(OBJS)
 ucat: ucat.o libutp.so
 	$(CXX) $(CFLAGS) -o ucat ucat.o -L. -lutp $(LDFLAGS)
 
+storjutp: storjutp.o libutp.so
+	$(CXX) $(CFLAGS) -o storjutp storjutp.o libutp.a $(LDFLAGS)
+
 ucat-static: ucat.o libutp.a
 	$(CXX) $(CXXFLAGS) -o ucat-static ucat.o libutp.a $(LDFLAGS)
 

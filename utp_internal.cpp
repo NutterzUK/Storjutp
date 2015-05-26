@@ -1294,8 +1294,9 @@ void UTPSocket::mtu_reset()
 	mtu_ceiling = get_udp_mtu();
 	// Less would not pass TCP...
 	mtu_floor = 576;
-	log(UTP_LOG_MTU, "MTU [RESET] floor:%d ceiling:%d current:%d"
-		, mtu_floor, mtu_ceiling, mtu_last);
+// due to Use of uninitialised error in valgrind
+	log(UTP_LOG_MTU, "MTU [RESET] floor:%d ceiling:%d"// current:%d"
+		, mtu_floor, mtu_ceiling);//, mtu_last);
 	assert(mtu_floor <= mtu_ceiling);
 	mtu_discover_time = utp_call_get_milliseconds(this->ctx, this) + 30 * 60 * 1000;
 }
