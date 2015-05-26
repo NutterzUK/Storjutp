@@ -330,10 +330,8 @@ void Storjutp::start(){
                         utp_issue_deferred_acks(ctx);
                     }
                 }else{
-                    if(!utp_process_udp(ctx, socket_data, len, 
-                                    (struct sockaddr *)&src_addr, addrlen)){
-                        LOG("invalid packet fd=%d",fd);
-                    }
+                    utp_process_udp(ctx, socket_data, len, 
+                                    (struct sockaddr *)&src_addr, addrlen);
                 }
             }while(len>0);
         }

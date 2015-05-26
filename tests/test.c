@@ -79,13 +79,47 @@ public:
     ~TestHandler(){
     }
 };
-	
+
+bool isSame(string file1,string file2){
+    FILE *f1=fopen(file1.c_str(),"rb");
+    FILE *f2=fopen(file2.c_str(),"rb");
+
+    if(f1==NULL || f2==NULL){
+      return false;
+    }
+    int c1='\0';
+    int c2='\0';
+    bool same=true;
+    while( (c1=fgetc(f1))!=EOF){
+        c2=fgetc(f2);
+        if(c1!=c2){
+            LOG("data differs");
+            same=false;
+            break;
+        }
+    }
+    if( (c1=fgetc(f1))!=EOF || (c2=fgetc(f2))!=EOF){
+        LOG("size differs");
+        LOG("%x %x",c1,c2);
+        same=false;
+    }
+    fclose(f1);
+    fclose(f2);
+    return same;
+}
 
 
 void sendingTest(){
     unsigned char dummy[32];
     int i = 0;
-    for(i=0;i<32;i++) dummy[i]=i;
+    string fname;
+    
+    for(i=0;i<32;i++){
+        dummy[i]=i;
+        char c[3];
+        sprintf(c, "%02X", i);
+        fname += c;
+    }
     Storjutp s1(12345);
     LOG("%d",s1.server_port);
     ok(s1.server_port == 12345, "port number check");
@@ -94,6 +128,10 @@ void sendingTest(){
 
     Storjutp s2;
     TestHandler te2(true);
+    int r = s2.sendFile("127.0.0.1", 12345, 
+               "tests/nonexist.dat", dummy, &te2);   
+    ok(r, "prepare to send non-exist file check");
+
     s2.sendFile("127.0.0.1", 12345, 
                "tests/rand.dat", dummy, &te2);   
 
@@ -105,6 +143,9 @@ void sendingTest(){
     });
     t1.join();
     t2.join();
+    LOG("fname = %s", fname.c_str());
+    ok(isSame("tests/rand.dat", fname), "file equality between original"
+                                         " and copyied check");
 }
 
 int main (int argc, char *argv[]) {
