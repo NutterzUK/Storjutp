@@ -1,7 +1,12 @@
-[![Build Status](https://travis-ci.org/StorjPlatform/storjutp.svg?branch=master)](https://travis-ci.org/StorjPlatform/storjutp)
-[![Coverage Status](https://coveralls.io/repos/StorjPlatform/storjutp/badge.svg?branch=master)](https://coveralls.io/r/StorjPlatform/storjutp?branch=master)
+[![Build Status](https://travis-ci.org/StorjPlatform/Storjutp.svg?branch=master)](https://travis-ci.org/StorjPlatform/storjutp)
+[![Coverage Status](https://coveralls.io/repos/StorjPlatform/Storjutp/badge.svg?branch=master)](https://coveralls.io/r/StorjPlatform/storjutp?branch=master)
 
 # File Transfer by [libutp](https://github.com/bittorrent/libutp)
+
+This module trnasfer files by [libutp](https://github.com/bittorrent/libutp).
+libutp uses [LEDBAT](http://en.wikipedia.org/wiki/LEDBAT) technology, 
+which does not interrupt other works that uses network, like web browsing,
+downloading, etc, i.e. Storjutp transfer files in _background_.
 
 ## Requirements
 This requires 
