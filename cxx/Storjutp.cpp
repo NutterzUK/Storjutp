@@ -138,6 +138,10 @@ uint64 callback_on_error(utp_callback_arguments *a){
 
 uint64 callback_on_accept(utp_callback_arguments *a){
    	LOG("on_accept");
+    Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
+    if(sutp->isTesting){
+     sutp->forceNoResponse = true;
+    }
     //from server to client
     // do return 0, or not accepted.
 	return 0;
@@ -225,8 +229,10 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
 
 uint64 callback_sendto(utp_callback_arguments *a){
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
-    sendto(sutp->fd, a->buf, a->len, 0,
-           a->address, a->address_len);
+    if(!sutp->forceNoResponse){
+        sendto(sutp->fd, a->buf, a->len, 0,
+               a->address, a->address_len);
+    }
 	return 0;
 }
 
@@ -256,6 +262,13 @@ void Storjutp::deleteFileInfo(FileInfo *fi){
 }
 
 Storjutp::Storjutp(int port) {
+    forceNoResponse = false;
+    if(port<0){
+        isTesting=true;
+        port = -port;
+    }else{
+        isTesting = false;
+    }
     ctx = utp_init(2);
   	utp_set_callback(ctx, UTP_ON_READ, &callback_on_read);
   	utp_set_callback(ctx, UTP_ON_ACCEPT, &callback_on_accept);
@@ -327,6 +340,7 @@ int Storjutp::sendFile(string dest, int port, string fname,
     utp_set_userdata(socket, f);
     memcpy(f->hash, hash, 32);
     f->handler = handler;
+    if(isTesting) forceNoResponse=true;
     return 0;
 }
 
@@ -350,17 +364,17 @@ void Storjutp::start(){
             do{
                 len = recvfrom(fd, socket_data, BUFSIZE, MSG_DONTWAIT, 
                                (struct sockaddr *)&src_addr, &addrlen);
-                if (len < 0) {
+                if (len < 0)  {
                     if (errno == EAGAIN || errno == EWOULDBLOCK) {
                         utp_issue_deferred_acks(ctx);
                     }
                 }else{
                     utp_process_udp(ctx, socket_data, len, 
-                                    (struct sockaddr *)&src_addr, addrlen);
+                        (struct sockaddr *)&src_addr, addrlen);
                 }
             }while(len>0);
         }
-      	utp_check_timeouts(ctx);
+        utp_check_timeouts(ctx);
     }
 }        
     
@@ -373,3 +387,5 @@ Storjutp::~Storjutp() {
     }
  	if(ctx) utp_destroy(ctx);
 }
+
+

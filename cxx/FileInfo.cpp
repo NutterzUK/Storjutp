@@ -127,5 +127,5 @@ size_t UnknownFileInfo::putByte(const byte* b, size_t len){
 }
 
 bool UnknownFileInfo::isCompleted(){
-    assert(false);
+    return false;
 }

@@ -128,8 +128,40 @@ void generateHash(unsigned char hash[32], string& str){
 }
 
 
-void errorTest(){
-    LOG("starting errorTest");
+void errorTest2(){
+    LOG("starting errorTest2");
+    unsigned char dummy[32];
+    string fname;
+    
+    generateHash(dummy, fname);
+    unlink(fname.c_str());
+    Storjutp s1(-6849);
+    TestHandler te1(false, true);
+    s1.registHash(dummy, &te1);
+
+    Storjutp s2(23432);
+    TestHandler te2(true, true);
+    s2.sendFile("127.0.0.1", s1.server_port, 
+               "tests/rand.dat", dummy, &te2);   
+
+    thread t1=std::thread([&](){
+        s1.start();
+    });
+    thread t2=std::thread([&](){
+        s2.start();
+    });
+    sleep(60);
+    s1.setStopFlag(1);
+    s2.setStopFlag(1);
+    t1.join();
+    t2.join();
+    ok(!te1.finished, "finish check 1");
+    ok(te2.finished, "finish check 2");
+}
+
+
+void errorTest1(){
+    LOG("starting errorTest1");
     unsigned char dummy[32], dummy2[32];
     int i = 0, j=0;
     string fname, fname2;
@@ -167,7 +199,6 @@ void errorTest(){
     r = s2.sendFile("1277.1.1.1.1", 12345, 
                "tests/rand.dat", dummy, &te2);   
     ok(r, "prepare to send to error address check");
-
 
 
     r = s2.sendFile("127.0.0.1", 12345, 
@@ -297,13 +328,14 @@ void fileInfoTest(){
     LOG("size = %d",ufi.size);
     ok(ufi.size == 25424239,  "size in UnknownFileInfo test");
 
-    dies_ok({ufi.isCompleted();} , "UnknownFileInfo isCompeted test");
+    ok(!ufi.isCompleted() , "UnknownFileInfo isCompeted test");
 
 }
 
 int main (int argc, char *argv[]) {
     fileInfoTest();
-    errorTest();
+    errorTest1();
+    errorTest2();
     sendTest();
     done_testing();
 }

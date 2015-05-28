@@ -143,6 +143,8 @@ public:
     int server_port;
     int fd;
     list<ReceiveFileInfo *> fileInfos;
+    bool isTesting;
+    bool forceNoResponse;
 
     /**
      * constructor.
