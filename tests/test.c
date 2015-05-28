@@ -163,6 +163,13 @@ void errorTest(){
 
     Storjutp s2;
     TestHandler te2(true, true);
+
+    r = s2.sendFile("1277.1.1.1.1", 12345, 
+               "tests/rand.dat", dummy, &te2);   
+    ok(r, "prepare to send to error address check");
+
+
+
     r = s2.sendFile("127.0.0.1", 12345, 
                "tests/nonexist.dat", dummy, &te2);   
     ok(r, "prepare to send non-exist file check");
@@ -255,7 +262,10 @@ void fileInfoTest(){
     ok(fi.size == 25424239, "size in SendFileInfo test");
     
     memcpy(fi.hash, dummy, 32);
-    fi.getByte(buf, 40);
+
+    fi.getByte(buf, 30);
+    fi.seek(-5);
+    fi.getByte(buf+25, 15);
     ok(checkArray(buf, dummy, 32), "buf in SendFileInfo test 1");
     unsigned char r[8];
     r[0]=0x0;
@@ -286,6 +296,9 @@ void fileInfoTest(){
     ok(checkArray(buf, dummy, 32), "buf in UnknownFileInfo test");
     LOG("size = %d",ufi.size);
     ok(ufi.size == 25424239,  "size in UnknownFileInfo test");
+
+    dies_ok({ufi.isCompleted();} , "UnknownFileInfo isCompeted test");
+
 }
 
 int main (int argc, char *argv[]) {

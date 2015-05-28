@@ -316,11 +316,12 @@ int Storjutp::sendFile(string dest, int port, string fname,
                              unsigned char* hash, Handler *handler){
     FILE *fp = fopen(fname.c_str(), "rb");
     if(!fp) return -1;
+    struct addrinfo *res = getAddrInfo(dest, port);
+    if(!res) return -1;
     SendFileInfo *f= new SendFileInfo();
     f->setFP(fp);
     LOG("sending %s at fd=%d",fname.c_str(), fd);
     utp_socket *socket = utp_create_socket(ctx);
-    struct addrinfo *res = getAddrInfo(dest, port);
     utp_connect(socket, res->ai_addr, res->ai_addrlen);
   	freeaddrinfo(res);
     utp_set_userdata(socket, f);
@@ -364,15 +365,6 @@ void Storjutp::start(){
 }        
     
 Storjutp::~Storjutp() {
-    //not to call callback when utp_socket()
-    /*
-    utp_set_callback(ctx, UTP_ON_READ, NULL);
-  	utp_set_callback(ctx, UTP_ON_ACCEPT, NULL);
-    utp_set_callback(ctx, UTP_ON_ERROR, NULL);
-    utp_set_callback(ctx, UTP_ON_STATE_CHANGE,NULL);
-  	utp_set_callback(ctx, UTP_SENDTO, NULL);
-    */
-    
     LOG("destructing fd=%d %d", fd, fileInfos.size());
     list<ReceiveFileInfo *>::iterator itr;
     for( itr = fileInfos.begin(); itr != fileInfos.end(); itr++ ){
