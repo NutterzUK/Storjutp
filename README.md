@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/StorjPlatform/Storjutp.svg?branch=master)](https://travis-ci.org/StorjPlatform/storjutp)
-[![Coverage Status](https://coveralls.io/repos/StorjPlatform/Storjutp/badge.svg?branch=master)](https://coveralls.io/r/StorjPlatform/storjutp?branch=master)
+[![Build Status](https://travis-ci.org/StorjPlatform/Storjutp.svg?branch=master)](https://travis-ci.org/StorjPlatform/Storjutp)
+[![Coverage Status](https://coveralls.io/repos/StorjPlatform/Storjutp/badge.svg?branch=master)](https://coveralls.io/r/StorjPlatform/Storjutp?branch=master)
 
 # File Transfer by [libutp](https://github.com/bittorrent/libutp)
 
@@ -11,7 +11,7 @@ downloading, etc, i.e. Storjutp transfer files in _background_.
 ## Requirements
 This requires 
 * `g++` (v4.8 or higher for test)
-* `python` (2.x or 3.x)
+* `Python` (2.x or 3.x)
 
 ## Installation
 

@@ -29,10 +29,8 @@
 #ifndef _Storjutp_H_
 #define _Storjutp_H_
 
-#include <vector>  
 #include <string>  
 #include <list>  
-#include <map>  
 
 #include "utp.h"
 
@@ -63,15 +61,67 @@ public:
     virtual ~Handler(){}
 };
 
-struct FileInfo {
-    bool isSending;
-    FILE *fp;
-    unsigned char hash[32];
+class FileInfo {
+public:
     Handler *handler;
-    utp_socket *socket;
+
+    unsigned char hash[32];
+
+    FileInfo();
+    virtual ~FileInfo();
+    virtual bool isCompleted() = 0;
+    bool equal(unsigned char h[32]);
 };
 
 
+class SendFileInfo  : public FileInfo {
+private:
+    FILE *fp;
+    size_t loc;
+
+    void size2header(unsigned char header[40]);
+
+public:
+    uint64_t size;
+
+    SendFileInfo();
+    virtual ~SendFileInfo();
+    void setFP(FILE *fp);
+    size_t getByte(byte* buf, size_t len);
+    FILE * getFP();
+    void seek(size_t to);
+    virtual bool isCompleted();
+};
+
+class ReceiveFileInfo : public FileInfo {
+private:
+    unsigned char header[40];
+
+public:
+    uint64_t size;
+    FILE *fp;
+
+    ReceiveFileInfo();
+    virtual ~ReceiveFileInfo();
+    virtual bool isCompleted();
+};
+
+class UnknownFileInfo : public FileInfo {
+private:
+    unsigned char header[40];
+    size_t loc;
+
+    void header2size();
+
+public:
+    uint64_t size;
+
+    UnknownFileInfo();
+    virtual ~UnknownFileInfo();
+    bool hasHash();
+    size_t putByte(const byte* b, size_t len);
+    virtual bool isCompleted();
+};
 
  /**
   * class for managing telehash-c.
@@ -92,7 +142,7 @@ private:
 public:
     int server_port;
     int fd;
-    list<FileInfo *> fileInfos;
+    list<ReceiveFileInfo *> fileInfos;
 
     /**
      * constructor.
@@ -108,7 +158,8 @@ public:
      */
     Storjutp(int port = 0);
     void deleteFileInfo(FileInfo *fi);
-    void registHash(unsigned char* hash, Handler *handler);
+    ReceiveFileInfo *findFileInfo(unsigned char* hash);
+    int registHash(unsigned char* hash, Handler *handler);
     void unregistHash(unsigned char* hash);
     int sendFile(string dest, int port, string fname, unsigned char *hash,
                  Handler *handler);
