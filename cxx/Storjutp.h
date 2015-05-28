@@ -38,19 +38,16 @@
 using namespace std;
 
 /**
- * Class for handling  received packets in telehash-c channel.
- * 
- * handle() method is called per one packet,
+ * Class for handling  when finishing downloading/uploading.
  */
 class Handler{
 
 public:
     /**
-     * handle one packet.
+     * handle on finish.
      * 
-     * @param json one packet described in json.
-     * @return a json packet that should be sent back. If NULL, no packets 
-     *          are sent back.
+     * @param hash file hash which finished downloading/uploading.
+     * @param errMessage string if error. NULL if no error.
      */
 	virtual void on_finish(unsigned char hash[32], 
                            const char *errMessage)=0;
@@ -61,6 +58,9 @@ public:
     virtual ~Handler(){}
 };
 
+/**
+ * class for storing information of a file that is downloading/uploading
+ */
 class FileInfo {
 public:
     Handler *handler;
@@ -165,6 +165,15 @@ public:
     void unregistHash(unsigned char* hash);
     int sendFile(string dest, int port, string fname, unsigned char *hash,
                  Handler *handler);
+                 
+    /**
+     * set test mode.
+     * 
+     * test use only.
+     * 
+     * @param test if 0, not test mode. if 1, timeout test. if 2, test for 
+     * getting header over twice.
+     */
     void setTesting(int test);
 
     /**

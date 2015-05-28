@@ -372,9 +372,9 @@ void fileInfoTest(){
 
 int main (int argc, char *argv[]) {
     fileInfoTest();
-//    errorTest1();
-//    errorTest2();
+    errorTest1();
+    errorTest2();
     errorTest3();
-//    sendTest();
+    sendTest();
     done_testing();
 }
