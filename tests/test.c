@@ -118,6 +118,13 @@ bool isSame(string file1,string file2){
     return same;
 }
 
+bool checkArray(unsigned char *a, unsigned char *b, size_t len){
+    for(size_t i = 0;i<len;i++){
+        if(a[i]!=b[i]) return false;
+    }
+    return true;
+}
+
 void generateHash(unsigned char hash[32], string& str){
     for(int i=0;i<32;i++){
         hash[i]=i;
@@ -127,37 +134,6 @@ void generateHash(unsigned char hash[32], string& str){
     }
 }
 
-
-void errorTest2(){
-    LOG("starting errorTest2");
-    unsigned char dummy[32];
-    string fname;
-    
-    generateHash(dummy, fname);
-    unlink(fname.c_str());
-    Storjutp s1(-6849);
-    TestHandler te1(false, true);
-    s1.registHash(dummy, &te1);
-
-    Storjutp s2(23432);
-    TestHandler te2(true, true);
-    s2.sendFile("127.0.0.1", s1.server_port, 
-               "tests/rand.dat", dummy, &te2);   
-
-    thread t1=std::thread([&](){
-        s1.start();
-    });
-    thread t2=std::thread([&](){
-        s2.start();
-    });
-    sleep(60);
-    s1.setStopFlag(1);
-    s2.setStopFlag(1);
-    t1.join();
-    t2.join();
-    ok(!te1.finished, "finish check 1");
-    ok(te2.finished, "finish check 2");
-}
 
 
 void errorTest1(){
@@ -237,6 +213,74 @@ void errorTest1(){
     ok(te2.finished, "finish check 2");
 }
 
+void errorTest2(){
+    LOG("starting errorTest2");
+    unsigned char dummy[32];
+    string fname;
+    
+    generateHash(dummy, fname);
+    unlink(fname.c_str());
+    Storjutp s1(6849);
+    s1.setTesting(1);
+    TestHandler te1(false, true);
+    s1.registHash(dummy, &te1);
+
+    Storjutp s2(23432);
+    TestHandler te2(true, true);
+    s2.sendFile("127.0.0.1", s1.server_port, 
+                "tests/rand.dat", dummy, &te2);   
+
+    thread t1=std::thread([&](){
+        s1.start();
+    });
+    thread t2=std::thread([&](){
+        s2.start();
+    });
+    sleep(60);
+    s1.setStopFlag(1);
+    s2.setStopFlag(1);
+    t1.join();
+    t2.join();
+    ok(!te1.finished, "finish check 1");
+    ok(te2.finished, "finish check 2");
+}
+
+void errorTest3(){
+    LOG("starting errorTest3");
+    unsigned char dummy[32];
+    string fname;
+    
+    generateHash(dummy, fname);
+    unlink(fname.c_str());
+    Storjutp s1(6849);
+    TestHandler te1(false);
+    s1.registHash(dummy, &te1);
+
+    Storjutp s2(23432);
+    s2.setTesting(2);
+    TestHandler te2(true);
+    s2.sendFile("127.0.0.1", s1.server_port, 
+                "tests/rand.dat", dummy, &te2);   
+
+    thread t1=std::thread([&](){
+        s1.start();
+    });
+    thread t2=std::thread([&](){
+        s2.start();
+    });
+    sleep(20);
+    s1.setStopFlag(1);
+    s2.setStopFlag(1);
+    t1.join();
+    t2.join();
+    ok(te1.finished, "finish check 1");
+    ok(te2.finished, "finish check 2");
+    ok(isSame("tests/rand.dat", fname), 
+       "file equality between original and copyied check");
+}
+
+
+
 void sendTest(){
     LOG("starting sendTest");
     unsigned char dummy[32];
@@ -266,18 +310,12 @@ void sendTest(){
     t1.join();
     t2.join();
     LOG("fname = %s", fname.c_str());
-    ok(isSame("tests/rand.dat", fname), "file equality between original"
-                                         " and copyied check");
+    ok(isSame("tests/rand.dat", fname), 
+       "file equality between original and copyied check");
     ok(te1.finished, "finish check 1");
     ok(te2.finished, "finish check 2");
 }
 
-bool checkArray(unsigned char *a, unsigned char *b, size_t len){
-    for(size_t i = 0;i<len;i++){
-        if(a[i]!=b[i]) return false;
-    }
-    return true;
-}
 
 void fileInfoTest(){
     unsigned char dummy[32];
@@ -294,9 +332,9 @@ void fileInfoTest(){
     
     memcpy(fi.hash, dummy, 32);
 
-    fi.getByte(buf, 30);
+    fi.getByte(buf);
     fi.seek(-5);
-    fi.getByte(buf+25, 15);
+    fi.getByte(buf+35);
     ok(checkArray(buf, dummy, 32), "buf in SendFileInfo test 1");
     unsigned char r[8];
     r[0]=0x0;
@@ -334,8 +372,9 @@ void fileInfoTest(){
 
 int main (int argc, char *argv[]) {
     fileInfoTest();
-    errorTest1();
-    errorTest2();
-    sendTest();
+//    errorTest1();
+//    errorTest2();
+    errorTest3();
+//    sendTest();
     done_testing();
 }

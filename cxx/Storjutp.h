@@ -87,7 +87,7 @@ public:
     SendFileInfo();
     virtual ~SendFileInfo();
     void setFP(FILE *fp);
-    size_t getByte(byte* buf, size_t len);
+    size_t getByte(byte* buf);
     FILE * getFP();
     void seek(size_t to);
     virtual bool isCompleted();
@@ -143,7 +143,7 @@ public:
     int server_port;
     int fd;
     list<ReceiveFileInfo *> fileInfos;
-    bool isTesting;
+    int isTesting;
     bool forceNoResponse;
 
     /**
@@ -165,6 +165,7 @@ public:
     void unregistHash(unsigned char* hash);
     int sendFile(string dest, int port, string fname, unsigned char *hash,
                  Handler *handler);
+    void setTesting(int test);
 
     /**
      * destructor.

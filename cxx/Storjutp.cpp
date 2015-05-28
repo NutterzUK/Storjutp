@@ -139,8 +139,8 @@ uint64 callback_on_error(utp_callback_arguments *a){
 uint64 callback_on_accept(utp_callback_arguments *a){
    	LOG("on_accept");
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
-    if(sutp->isTesting){
-     sutp->forceNoResponse = true;
+    if(sutp->isTesting == 1){
+        sutp->forceNoResponse = true;
     }
     //from server to client
     // do return 0, or not accepted.
@@ -152,9 +152,13 @@ void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
     unsigned char buf[BUFSIZE];
     do {
         len_u = 0;
-        len = fi->getByte(buf, 40);
+        len = fi->getByte(buf);
         if(len > 0){
-            len_u = utp_write(s, buf, len);
+            int llen = len;
+            if (sutp->isTesting == 2){
+                llen = 10;
+            }
+            len_u = utp_write(s, buf, llen);
             if(len_u < len){
                 fi->seek(len_u - len);
             }
@@ -262,13 +266,8 @@ void Storjutp::deleteFileInfo(FileInfo *fi){
 }
 
 Storjutp::Storjutp(int port) {
+    isTesting = 0;
     forceNoResponse = false;
-    if(port<0){
-        isTesting=true;
-        port = -port;
-    }else{
-        isTesting = false;
-    }
     ctx = utp_init(2);
   	utp_set_callback(ctx, UTP_ON_READ, &callback_on_read);
   	utp_set_callback(ctx, UTP_ON_ACCEPT, &callback_on_accept);
@@ -340,7 +339,7 @@ int Storjutp::sendFile(string dest, int port, string fname,
     utp_set_userdata(socket, f);
     memcpy(f->hash, hash, 32);
     f->handler = handler;
-    if(isTesting) forceNoResponse=true;
+    if(isTesting == 1) forceNoResponse=true;
     return 0;
 }
 
@@ -377,6 +376,10 @@ void Storjutp::start(){
         utp_check_timeouts(ctx);
     }
 }        
+
+void Storjutp::setTesting(int test) {
+    isTesting = test;
+}
     
 Storjutp::~Storjutp() {
     LOG("destructing fd=%d %d", fd, fileInfos.size());

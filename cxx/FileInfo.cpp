@@ -49,12 +49,12 @@ void SendFileInfo::setFP(FILE *fp){
     }
 }
 
-size_t SendFileInfo::getByte(byte* buf, size_t len){
+size_t SendFileInfo::getByte(byte* buf){
     unsigned char header[40];
     size2header(header);
     size_t buf_pos = 0;
     if(loc < 40){
-        for(; len > 0 && loc < 40 ;buf_pos++, loc++, len--){
+        for(; loc < 40 ;buf_pos++, loc++){
             buf[buf_pos] = header[loc];
         }
     }
