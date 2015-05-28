@@ -111,7 +111,6 @@ uint64 callback_on_read(utp_callback_arguments *a){
     	for(len = 0;left; left -=len, p+=len) {
 	    	len = fwrite(p, 1, left, rfi->fp);
     	}
-       	LOG("wrote file len=%d", len);
     }
     if(left==0){
     	utp_read_drained(a->socket);
@@ -152,7 +151,6 @@ void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
         len = fi->getByte(buf, 40);
         if(len > 0){
             len_u = utp_write(s, buf, len);
-          	LOG("utp_write header len=%d", len_u);
             if(len_u < len){
                 fi->seek(len_u - len);
             }
@@ -164,7 +162,6 @@ void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
         len = fread(buf, 1, BUFSIZE, fi->getFP());
         if(len > 0){
             len_u = utp_write(s, buf, len);
-          	LOG("utp_write file len=%d", len_u);
             if(len_u < len){
                 fseek(fi->getFP(), len_u - len, SEEK_CUR);
             }
@@ -185,10 +182,8 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
 
 	switch (a->state) {
 		case UTP_STATE_CONNECT:
-      	    LOG("connected");
             //fall through
 		case UTP_STATE_WRITABLE:
-      	    LOG("writable");
         //from client to server
         {
             SendFileInfo *ufi = dynamic_cast<SendFileInfo *>(_fi);
