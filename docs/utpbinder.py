@@ -1,61 +1,55 @@
 """
-  telehash binder implmeneted in C++.
+  uTP file transfer library binder implmeneted in C++.
 """
 
 
-def init(port, channel__handler_factory, broadcast_handler):
+def init(port):
     """
     init.
 
     :param int port: port number to be listened packets. if 0, port number is.
-    :param Method channel_handler_factory: method for creating ChannelHandler.
-                                           called when requested openning.
-                                           channel.
-    :param method broadcast_handler: method for handling broadcasted message.
     """
     pass
 
 
-def open_channel(cobj, location, name, handler):
+def regist_hash(cobj, hash, handler, dir):
     """
-    open a channel associated a channel name.
+    register acceptable file hash.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param str location: json str where you want to open a channel.
-    :param str name: channel name that you want to open .
-    :param Method handler: method for handling channel packets.
-                           called every time when receiving packets.
+    :param bytearray hash: acceputable file hash.
+    :param method handler: Handler called when finish receiving a file.
+    handler method must have hash(bytearray) and errormessage(str)
+    arguments.
+    :param str dir:  directory where file will be saved.
+    :return 0 if success
     """
     pass
 
 
-def add_broadcaster(cobj, location, add):
+def get_serverport(cobj):
     """
-    send a broadcast request to broadcaster.
-    After calling this method, broadcast messages will be send continually.
+    get listening server port.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param str location: json str where you want to request a broadcast.
-    :param  int add: if 0, request to not to  broadcast. request to broaadcast
-                     if others.
+    :return:  port number int.
     """
     pass
 
 
-def broadcast(cobj, location, message):
+def stop_hash(cobj, hash):
     """
-    broadcast a message.
+    unregister a hash and stop sending/downloading  file.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param str location: json str where you want to send a broadcast.
-    :param str message: broadcast message.
+    :param bytearray hash: acceputable file hash to be unregistered.
     """
     pass
 
 
 def start(cobj):
     """
-    star to receive netowrk packets in the current thread..
+    star to receive/send netowrk packets in the current thread..
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
     """
@@ -64,7 +58,7 @@ def start(cobj):
 
 def set_stopflag(cobj, stop):
     """
-    set stopFlag that stop/continue to receive network packets loop..
+    set stopFlag that stop/continue to receive\send network packets loop..
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
     :param int flag: 1 if to stop. others if to run.
@@ -75,40 +69,32 @@ def set_stopflag(cobj, stop):
 def finalize(cobj):
     """
     destructor.
-    delete factory, StorjTelehash instnace, and broadcasthandler.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
     """
     pass
 
 
-def set_gc(cobj, use):
+def send_file(cobj, dest, port, fname, hash, handler):
     """
-    set  GC to stop or not. test use only. don't use it.
+    start to send a file.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param int use:  0 if you do not want to use. others if not.
+    :param int port: destination port to be sent.
+    :param str fname: file name to be sent.
+    :param bytearray hash: file hash.
+    :param method handler: Handler called when finishing uploading.
      """
     pass
 
 
-def gcollect(cobj):
+def get_progress(cobj, hash):
     """
-    run force garbage collect.
+    get downloaded/uploaded size.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
+    :param bytearray hash: file hash to be checked.
+    :return: downloaded/uploaded file size
      """
     pass
 
-
-def get_my_location(cobj):
-    """
-     return my location information. format is:
-
-     {"keys":{"1a":"al45izsjxe2sikv7mc6jpnwywybbkqvsou"},
-     paths":[{"type":"udp4","ip":"127.0.0.1","port":1234}]
-
-     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-     :return: location info.
-     """
-    pass

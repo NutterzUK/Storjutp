@@ -71,7 +71,7 @@ class Storjutp(object):
        :param method handler: Handler called when finish receiving a file.
        handler method must have hash(bytearray) and errormessage(str)
        arguments.
-       :param st dir:  directory where file will be saved.
+       :param str dir:  directory where file will be saved.
         :return 0 if success
         """
         utpbinder.set_stopflag(self.cobj, 1)
@@ -106,7 +106,7 @@ class Storjutp(object):
 
     def send_file(self, dest, port, fname, hash, handler):
         """
-        prepare to send a file.
+        start to send a file.
 
         :param str dest: destination ip address.
         :param int port: destination port to be sent.
@@ -123,6 +123,7 @@ class Storjutp(object):
     def get_serverport(self):
         """
         get listening server port.
+
         :return:  port number int.
         """
         return utpbinder.get_serverport(self.cobj)

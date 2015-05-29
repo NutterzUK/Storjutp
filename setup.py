@@ -50,11 +50,10 @@ test_requirements = [
 module = Extension('utpbinder',
                    ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
                     'cxx/Storjutp.cpp'],
-                   extra_link_args=['libutp/libutp.a'],
+                   extra_link_args=['libutp/libutp.a', '-lrt'],
                    include_dirs=['libutp',
                                  'cxx'],
                    library_dirs=['libutp'],
-                   libraries=['rt'],
                    )
 
 
