@@ -13,16 +13,16 @@ before_install:
   - sudo apt-get install valgrind
   - git submodule update --init --recursive
   - make test
-#  - make python
+  - make python
   - pip install coverage coveralls
-#  - python setup.py install
+  - python setup.py install
 
 script:
   - LD_LIBRARY_PATH=libtap ./test
-#  - coverage run setup.py test -a "--doctest-modules --pep8 -v tests/ storjutp/"
+  - coverage run setup.py test -a "--doctest-modules --pep8 -v tests/ storjutp/"
 
 after_success:
-#  - coverage report -m --include="storjutp/*.py"
+  - coverage report -m --include="storjutp/*.py"
   - pip install cpp-coveralls
   - coveralls --exclude tests --exclude libutp --exclude libtap --exclude cxx/utpbinder_python.cpp --gcov-options '\-lp'
   - LD_LIBRARY_PATH=libtap G_SLICE=always-malloc G_DEBUG=gc-friendly  valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --log-file=a.log --num-callers=40 ./test

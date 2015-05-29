@@ -55,24 +55,14 @@ private:
     bool hasError;
 public:
     bool finished;
-    /**
-     * create myself with handlers.
-     * 
-     * @param h channels.
-     */
+
 	TestHandler(bool isSender, bool hasError = false){
         this->isSender = isSender;
         this->hasError = hasError;
         finished = false;
 	}
 	
-    /**
-     * handle one packet.
-     * 
-     * @param json one packet described in json.
-     * @return a json packet that should be sent back. not be sent if NULL.
-     */
-	void on_finish(unsigned char *hash, const char *error){
+	int on_finish(unsigned char *hash, const char *error){
         LOG("isSender = %d", isSender);
         if(error){
             LOG("error: %s",  error);
@@ -84,6 +74,7 @@ public:
             ok( error==NULL, "no error on sending.");
         }
         finished = true;
+        return 0;
 	}
     
     ~TestHandler(){
@@ -165,7 +156,7 @@ void errorTest1(){
     r = s1.registHash(dummy, &te1);
     ok(r, "double regist test");
 
-    s1.unregistHash(dummy);
+    s1.stopHash(dummy);
     r = s1.registHash(dummy, &te1);
     ok(!r, "re-regist after unregist test");
 
@@ -191,6 +182,7 @@ void errorTest1(){
     thread t2=std::thread([&](){
         s2.start();
     });
+    te1.finished=false;
     sleep(10);
     s1.setStopFlag(1);
     s2.setStopFlag(1);
@@ -304,6 +296,14 @@ void sendTest(){
     thread t2=std::thread([&](){
         s2.start();
     });
+    sleep(1);
+    size_t s = 0;
+    s = s1.getProgress(dummy);
+    LOG("progress = %ld",s);
+    ok(0 < s && s < 25424239, "receiver getPgoress check");
+    s = s2.getProgress(dummy);
+    LOG("progress = %ld",s);
+    ok(0 < s && s < 25424239, "sender getPgoress check");
     sleep(10);
     s1.setStopFlag(1);
     s2.setStopFlag(1);
@@ -367,7 +367,6 @@ void fileInfoTest(){
     ok(ufi.size == 25424239,  "size in UnknownFileInfo test");
 
     ok(!ufi.isCompleted() , "UnknownFileInfo isCompeted test");
-
 }
 
 int main (int argc, char *argv[]) {

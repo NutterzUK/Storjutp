@@ -66,8 +66,9 @@ string byte2string(unsigned char *bytes, string& result){
 
 ReceiveFileInfo *checkHash(UnknownFileInfo *fi, Storjutp *sutp, 
                            utp_socket *socket){
-    ReceiveFileInfo *fii = sutp->findFileInfo(fi->hash);
-    LOG("unknown file size=%ld", fi->size);
+    ReceiveFileInfo *fii = dynamic_cast<ReceiveFileInfo *>(
+                           sutp->findFileInfo(fi->hash));
+    LOG("size of unknown file = %ld", fi->size);
     if(!fii){
      	LOG("rejected");
         utp_set_userdata(socket, NULL);
@@ -77,8 +78,8 @@ ReceiveFileInfo *checkHash(UnknownFileInfo *fi, Storjutp *sutp,
     }
   	LOG("newly accepted");
     fii->size = fi->size;
+    fii->socket = socket;
     utp_set_userdata(socket, fii);
-    sutp->fileInfos.remove(fii);
     delete fi;
     return fii;
 }
@@ -118,16 +119,24 @@ uint64 callback_on_read(utp_callback_arguments *a){
 	return 0;
 }
 
+void callHandler(FileInfo *fi, const char *message){
+    if(fi && fi->handler){
+        LOG("calling handler %x",fi->handler);
+        int r = fi->handler->on_finish(fi->hash, message);
+        if(r==1){
+            delete fi->handler;
+            fi->handler = NULL;
+        }
+    }
+}
+    
+
 uint64 callback_on_error(utp_callback_arguments *a){
 	LOG("Error: %s", utp_error_code_names[a->error_code]);
     FileInfo *fi = (FileInfo *)utp_get_userdata(a->socket);
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
 
-    if(fi && fi->handler){
-        LOG("calling handler %x",fi->handler);
-        fi->handler->on_finish(fi->hash,
-                               utp_error_code_names[a->error_code]);
-    }
+    callHandler(fi, utp_error_code_names[a->error_code]);
     if(fi){
         sutp->deleteFileInfo(fi);
         utp_set_userdata(a->socket, NULL);
@@ -177,7 +186,8 @@ void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
     }while(len_u > 0);
 
     if(fi->isCompleted()){
-        fi->handler->on_finish(fi->hash, NULL);
+        callHandler(fi, NULL);
+
         sutp->deleteFileInfo(fi);
         utp_set_userdata(s, NULL);
         utp_close(s);
@@ -209,9 +219,8 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
                 if(!_fi->isCompleted()){
                     reason = "disconnected from peer";
                 }
-                _fi->handler->on_finish(_fi->hash, reason);
+                callHandler(_fi, reason);
             }
-            utp_set_userdata(a->socket, NULL);
             sutp->deleteFileInfo(_fi);
             utp_close(a->socket);
 			break;
@@ -219,8 +228,9 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
         //called from destructor of utp_socket.
 		case UTP_STATE_DESTROYING:
         {
-          	LOG("socket is destyoed fd=%d",sutp->fd);
+            LOG("socket is destyoed fd=%d",sutp->fd);
             if(_fi){
+              	_fi->socket = NULL;
                 sutp->deleteFileInfo(_fi);
             }
 			break;
@@ -257,10 +267,9 @@ struct addrinfo* getAddrInfo(string addr, int port){
 }
 
 void Storjutp::deleteFileInfo(FileInfo *fi){
-    ReceiveFileInfo *rfi = dynamic_cast<ReceiveFileInfo *>(fi);
-
-    if(rfi){
-        fileInfos.remove(rfi);
+    if(fi){
+        fileInfos.remove(fi);
+        if(fi->socket) utp_set_userdata(fi->socket, NULL);
     }
     delete fi;
 }
@@ -277,6 +286,7 @@ Storjutp::Storjutp(int port) {
 
     fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     utp_context_set_userdata(ctx, this);
+    if(port == 0) port = 1;
     for(server_port = port; server_port < 65535; server_port++){
         struct addrinfo *res = getAddrInfo("0.0.0.0", server_port);
 	    if(res  && !bind(fd, res->ai_addr, res->ai_addrlen)){
@@ -289,23 +299,27 @@ Storjutp::Storjutp(int port) {
 }
 
 
-int Storjutp::registHash(unsigned char* hash, Handler *handler){
+int Storjutp::registHash(unsigned char* hash, Handler *handler, string dir){
     if(findFileInfo(hash)) return -1;
     ReceiveFileInfo *fi = new ReceiveFileInfo();
-    memcpy(fi->hash, hash, 32);
     string fname;
     byte2string(hash, fname);
-    fi->fp=fopen(fname.c_str(), "wb");
+    fname = dir + "/" + fname;
+    FILE *fp =fopen(fname.c_str(), "wb");
+    if(!fp) return 1;
+    
+    memcpy(fi->hash, hash, 32);
     fi->handler = handler;
+    fi->fp = fp;
     fileInfos.push_back(fi);
     LOG("regist %s at fd=%d",fname.c_str(), fd);
     return 0;
 }
 
-ReceiveFileInfo *Storjutp::findFileInfo(unsigned char* hash){
-    list<ReceiveFileInfo *>::iterator itr;
+FileInfo *Storjutp::findFileInfo(unsigned char* hash){
+    list<FileInfo *>::iterator itr;
     bool match = false;
-    for(itr = fileInfos.begin();itr != fileInfos.end();itr++){
+    for(itr = fileInfos.begin(); itr != fileInfos.end();itr++){
         if((*itr)->equal(hash)){
             match=true;
             break;
@@ -317,9 +331,23 @@ ReceiveFileInfo *Storjutp::findFileInfo(unsigned char* hash){
     return NULL;
 }
 
-void Storjutp::unregistHash(unsigned char* hash){
-    ReceiveFileInfo *fi = findFileInfo(hash);
+size_t Storjutp::getProgress(unsigned char* hash){
+    FileInfo *fi = findFileInfo(hash);
+    
     if(fi){
+        return fi->getProgress();
+    }
+    return 0;
+}
+
+void Storjutp::stopHash(unsigned char* hash){
+    FileInfo *fi = findFileInfo(hash);
+    
+    if(fi){
+        if(fi->socket) {
+            utp_close(fi->socket);
+        }
+        callHandler(fi, "stopped by user");
         deleteFileInfo(fi);
     }
 }
@@ -331,6 +359,7 @@ int Storjutp::sendFile(string dest, int port, string fname,
     struct addrinfo *res = getAddrInfo(dest, port);
     if(!res) return -1;
     SendFileInfo *f= new SendFileInfo();
+    fileInfos.push_back(f);
     f->setFP(fp);
     LOG("sending %s at fd=%d",fname.c_str(), fd);
     utp_socket *socket = utp_create_socket(ctx);
@@ -339,6 +368,7 @@ int Storjutp::sendFile(string dest, int port, string fname,
     utp_set_userdata(socket, f);
     memcpy(f->hash, hash, 32);
     f->handler = handler;
+    f->socket = socket;
     if(isTesting == 1) forceNoResponse=true;
     return 0;
 }
@@ -348,7 +378,7 @@ void Storjutp::setStopFlag(int flag){
 }
 
 void Storjutp::start(){
-    LOG("running fd=%d", fd);
+    LOG("running port=%d fd=%d", server_port, fd);
     unsigned char socket_data[BUFSIZE];
    	struct sockaddr_in src_addr;
    	socklen_t addrlen = sizeof(src_addr);
@@ -383,9 +413,10 @@ void Storjutp::setTesting(int test) {
     
 Storjutp::~Storjutp() {
     LOG("destructing fd=%d %d", fd, fileInfos.size());
-    list<ReceiveFileInfo *>::iterator itr;
+    list<FileInfo *>::iterator itr;
     for( itr = fileInfos.begin(); itr != fileInfos.end(); itr++ ){
-        //don't use deleteFileInfo(), must not erase
+        //don't use deleteFileInfo(), must not use `erase`
+        if((*itr)->socket) utp_set_userdata((*itr)->socket, NULL);
         delete *itr;
     }
  	if(ctx) utp_destroy(ctx);

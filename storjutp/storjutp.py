@@ -31,28 +31,26 @@ import types
 import threading
 import logging
 
-from storj.messaging.messaging import Messaging
-from storj.messaging.messaging import ChannelHandler
-from . import telehashbinder
+import utpbinder
 # import telehashbinder #for creating document
 
 log_fmt = '%(filename)s:%(lineno)d %(funcName)s() %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=log_fmt)
 
 
-class StorjTelehash(Messaging):
+class Storjutp(object):
+
     """
     Concrete Messaging layer for Storj Platform in Telehash.
     Everything in telehash-C is not thread safe. So run function after
     stop a thread, and run a thread again in all functions.
     """
 
-    DESCRIPTION = 'messaging layer in telehach'
     """ description about this messaging implementation which is
     used in sublcass.
     """
 
-    def __init__(self, broadcast_handler, **keywords):
+    def __init__(self, port=0):
         """
         init
 
@@ -61,39 +59,19 @@ class StorjTelehash(Messaging):
         if 0, port number
         is seletcted randomly.
         """
-        Messaging.__init__(self, broadcast_handler, **keywords)
-        if not isinstance(broadcast_handler, types.MethodType):
-            raise TypeError("cannot add non method handler.")
-
-        if 'port' in keywords:
-            port = keywords['port']
-        else:
-            port = 0
-        self.cobj = telehashbinder.init(port, self.get_channel_handler,
-                                        broadcast_handler)
+        self.cobj = utpbinder.init(port)
         self.start_thread()
-
-    def get_my_location(self):
-        """
-        return my location information. format is:
-         {"keys":{"1a":"al45izsjxe2sikv7mc6jpnwywybbkqvsou"},
-        paths":[{"type":"udp4","ip":"127.0.0.1","port":1234}]
-
-         :return: location info.
-        """
-        Messaging.get_my_location(self)
-        return telehashbinder.get_my_location(self.cobj)
 
     def start_thread(self):
         """star to receive netowrk packets in a thread. """
 
-        telehashbinder.set_stopflag(self.cobj, 0)
+        utpbinder.set_stopflag(self.cobj, 0)
         self.thread = threading.Thread(
-            target=lambda: telehashbinder.start(self.cobj))
+            target=lambda: utpbinder.start(self.cobj))
         self.thread.setDaemon(True)
         self.thread.start()
 
-    def open_channel(self, location, name, handler):
+    def regist_hash(self, hash, handler, directory='.'):
         """
         open a channel with a handler.
 
@@ -101,17 +79,40 @@ class StorjTelehash(Messaging):
         :param str name: channel name that you want to open .
         :param ChannelHandler handler: channel handler.
         """
-        Messaging.open_channel(self, location, name, handler)
-        if isinstance(handler, ChannelHandler):
-            telehashbinder.set_stopflag(self.cobj, 1)
-            self.thread.join()
-            telehashbinder.open_channel(self.cobj, location, name,
-                                        handler.handle)
-            self.start_thread()
-        else:
-            raise TypeError("cannot add non ChannelHandler instance")
+        utpbinder.set_stopflag(self.cobj, 1)
+        self.thread.join()
+        r = utpbinder.regist_hash(self.cobj, hash, handler, directory)
+        self.start_thread()
+        return r
 
-    def add_broadcaster(self, location, add):
+    def stop_hash(self, hash):
+        """
+        open a channel with a handler.
+
+        :param str location: json str where you want to open a channel.
+        :param str name: channel name that you want to open .
+        :param ChannelHandler handler: channel handler.
+        """
+        utpbinder.set_stopflag(self.cobj, 1)
+        self.thread.join()
+        utpbinder.stop_hash(self.cobj, hash)
+        self.start_thread()
+
+    def get_progress(self, hash):
+        """
+        open a channel with a handler.
+
+        :param str location: json str where you want to open a channel.
+        :param str name: channel name that you want to open .
+        :param ChannelHandler handler: channel handler.
+        """
+        utpbinder.set_stopflag(self.cobj, 1)
+        self.thread.join()
+        size = utpbinder.get_progress(self.cobj, hash)
+        self.start_thread()
+        return size
+
+    def send_file(self, dest, port, fname, hash, handler):
         """
         send a broadcast request to broadcaster.
         After calling this method, broadcast messages will be send continually.
@@ -120,30 +121,27 @@ class StorjTelehash(Messaging):
         :param  int add: if 0, request to not to  broadcast. request to
                           broaadcast if others.
         """
-        Messaging.add_broadcaster(self, location, add)
-        telehashbinder.set_stopflag(self.cobj, 1)
+        utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
-        telehashbinder.add_broadcaster(self.cobj, location, add)
+        r = utpbinder.send_file(self.cobj, dest, port, fname, hash, handler)
         self.start_thread()
+        return r
 
-    def broadcast(self, location, message):
+    def get_serverport(self):
         """
-        broadcast a message.
+        send a broadcast request to broadcaster.
+        After calling this method, broadcast messages will be send continually.
 
-        :param str location: json str where you want to send a broadcast.
-        :param str message: broadcast message.
+        :param str location: json str where you want to request a broadcast.
+        :param  int add: if 0, request to not to  broadcast. request to
+                          broaadcast if others.
         """
-        Messaging.broadcast(self, location, message)
-        telehashbinder.set_stopflag(self.cobj, 1)
-        self.thread.join()
-        telehashbinder.broadcast(self.cobj, location, message)
-        self.start_thread()
+        return utpbinder.get_serverport(self.cobj)
 
     def finalize(self):
         """
          destructor. stop a thread and call telehashbinder's finalization.
         """
-        if hasattr(self, "cobj"):
-            telehashbinder.set_stopflag(self.cobj, 1)
-            self.thread.join()
-            telehashbinder.finalize(self.cobj)
+        utpbinder.set_stopflag(self.cobj, 1)
+        self.thread.join()
+        utpbinder.finalize(self.cobj)

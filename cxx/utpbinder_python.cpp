@@ -26,12 +26,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "StorjTelehash.h"
+#include <list>  
+
+#include "Storjutp.h"
 #include <Python.h>
 #include "bytesobject.h"
 
 #ifndef LOG
-void *logging(const char *file, int line, const char *function, 
+void *logging0(const char *file, int line, const char *function, 
                const char * format, ...)
 {
   char buffer[256];
@@ -44,186 +46,142 @@ void *logging(const char *file, int line, const char *function,
   return NULL;
 
 }
-#define LOG(fmt, ...)  logging(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
+#define LOG(fmt, ...)  logging0(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
 #endif
 
-char *EvaluatePyObject(PyObject *obj, char *str){
+void EvaluatePyObject(PyObject *obj, unsigned char hash[32], 
+                        const char *errorMessage){
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
     if(!PyCallable_Check(obj)){
         LOG("not callable object");
     }
-    PyObject *arglist = Py_BuildValue("(s)", str);
-    PyObject *result = PyObject_CallObject(obj, arglist);
-        
-    char *buffer=NULL;
-    char *rbuf=NULL;
-    PyObject *ascii=NULL;
-    if(result){
-        if(PyUnicode_Check(result)){
-            ascii=PyUnicode_AsASCIIString(result);
-            buffer=PyBytes_AsString(ascii);
-            rbuf=(char *)malloc(strlen(buffer));
-            strcpy(rbuf,buffer);
-            Py_XDECREF(ascii);
-        }else{
-            if(PyBytes_Check(result)){
-                buffer=PyBytes_AsString(result);
-                rbuf=(char *)malloc(strlen(buffer));
-                strcpy(rbuf,buffer);
-            }
-        }
-    }else{
+
+    PyObject *arglist = Py_BuildValue("(y#z)", hash, 32, errorMessage);
+    if(!arglist){
+        LOG("failed to build arg list");
+    }
+    PyObject *ret = PyObject_CallObject(obj, arglist);
+    if(!ret){
         PyErr_PrintEx(1);
     }
-
+    Py_XDECREF(ret);
     Py_XDECREF(arglist);
-    Py_XDECREF(result);
     PyGILState_Release(gstate);
-    return rbuf;
 }
     
-class ChannelHandlerImpl : public ChannelHandler{
+class HandlerImpl : public Handler{
 private:
     PyObject *pyHandler=NULL;
+    
 public:
-    /**
-     * create myself with handlers.
-     * 
-     * @param h channels.
-     */
-	ChannelHandlerImpl(PyObject *pyHandler){
+	HandlerImpl(PyObject *pyHandler){
         Py_XINCREF(pyHandler);
         this->pyHandler=pyHandler;
 	}
     
-    /**
-     * handle one packet.
-     * 
-     * @param json one packet described in json.
-     * @return a json packet that should be sent back. not be sent if NULL.
-     */
-	char* handle(char *json){
-        return EvaluatePyObject(pyHandler, json);
+    bool hasPyHandler(PyObject *p){
+        return pyHandler == p;
+    }
+
+	virtual int on_finish(unsigned char hash[32], 
+                           const char *errMessage){
+        EvaluatePyObject(pyHandler, hash, errMessage);
+        return 1;
 	}
     
-    ~ChannelHandlerImpl(){
-         Py_XDECREF(pyHandler);
+    ~HandlerImpl(){
+        Py_XDECREF(pyHandler);
     }
 };
 
-class ChannelHandlerFactoryImpl : public ChannelHandlerFactory{
-private:
-    PyObject *pyFactory = NULL;
-public:
-    ChannelHandlerFactoryImpl(PyObject *pyFactory){
-        Py_XINCREF(pyFactory); 
-        this->pyFactory=pyFactory;
-    }
-    /**
-     * return myself which is associated channel name.
-     * 
-     * @param name channel name.
-     * @return myself associated the channel name.
-     */
-	ChannelHandler* createInstance(string name){
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        if(!PyCallable_Check(pyFactory)){
-            LOG("factory is not callable object\n");
-        } else {
-            PyObject *arglist = Py_BuildValue("(s)", name.c_str());
-            PyObject *pyHandler = PyObject_CallObject(pyFactory, arglist);
-            Py_XDECREF(arglist); 
-            if(!pyHandler){
-                PyErr_PrintEx(1);
-            } else {
-                if(pyHandler == Py_None){
-                }else{
-                    if(PyCallable_Check(pyHandler)){
-                        PyGILState_Release(gstate);
-   		                return new ChannelHandlerImpl(pyHandler);
-                    }
-                }
-            }
-        }
-        LOG("cannot create instance\n");
-        PyGILState_Release(gstate);
-        return NULL;
-	}
-    
-    ~ChannelHandlerFactoryImpl(){
-        Py_XDECREF(pyFactory);
-    }
-};
-
-static PyObject *telehashbinder_init(PyObject *self, PyObject *args){
+static PyObject *utpbinder_init(PyObject *self, PyObject *args){
     int port=0;
-    PyObject *pyFactory=NULL;
-    PyObject *broadcastHandler=NULL;
     
     if (! PyEval_ThreadsInitialized()) {
         PyEval_InitThreads();
     }
-    if (!PyArg_ParseTuple(args, "iOO", &port,&pyFactory,&broadcastHandler)){
-        return NULL;
-    }
-    if (!PyCallable_Check(pyFactory) || !PyCallable_Check(broadcastHandler)) {
-        PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+    if (!PyArg_ParseTuple(args, "i", &port)){
         return NULL;
     }
 
-    ChannelHandler* pyBHandler=new ChannelHandlerImpl(broadcastHandler);
-    ChannelHandlerFactoryImpl *f=
-        new ChannelHandlerFactoryImpl(pyFactory);
-    StorjTelehash *m=new StorjTelehash(port,*f,*pyBHandler);
-    PyObject *p=PyCapsule_New(m, NULL,NULL);
-    return p;
+    Storjutp *m=new Storjutp(port);
+    PyObject *po=PyCapsule_New(m, NULL,NULL);
+    return po;
 }
 
-static PyObject *telehashbinder_openChannel(PyObject *self, 
+static PyObject *utpbinder_registHash(PyObject *self, 
                                                 PyObject *args){
     PyObject *cobj=NULL;
-    char *location=NULL;
-    char *channelName=NULL;
+    PyByteArrayObject *hash_=NULL;
     PyObject *handler=NULL;
-    if (!PyArg_ParseTuple(args, "OssO",&cobj,&location,&channelName,&handler)){
+    char *dir=NULL;
+    if (!PyArg_ParseTuple(args, "OOOs",&cobj,&hash_,&handler,&dir)){
         return NULL;
     }
-    ChannelHandlerImpl *h=new ChannelHandlerImpl(handler);
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
-    m->openChannel(location,channelName,*h);
-    Py_RETURN_NONE;
+    if (!PyCallable_Check(handler)) {
+        PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+        return NULL;
+    } 
+    unsigned char* hash = (unsigned char *)
+                                PyByteArray_AsString((PyObject*) hash_);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
+    HandlerImpl *h=new HandlerImpl(handler);
+    int r = m->registHash(hash,h,dir);
+    return Py_BuildValue("i", r);
 }
 
-static PyObject *telehashbinder_addBroadcaster(PyObject *self, 
+static PyObject *utpbinder_getServerPort(PyObject *self, 
+                                                PyObject *args){
+    PyObject *cobj=NULL;
+    if (!PyArg_ParseTuple(args, "O",&cobj)){
+        return NULL;
+    }
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
+    return Py_BuildValue("i", m->server_port);
+}
+
+static PyObject *utpbinder_stopHash(PyObject *self, 
                                                    PyObject *args){
     PyObject *cobj=NULL;
-    char *location=NULL;
-    int add=0;
-    if (!PyArg_ParseTuple(args, "Osi",&cobj,&location,&add)){
+    PyByteArrayObject *hash_=NULL;
+    if (!PyArg_ParseTuple(args, "OO",&cobj,&hash_)){
         return NULL;
     }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
-    m->addBroadcaster(location,add);
+    unsigned char* hash = (unsigned char *)
+                                PyByteArray_AsString((PyObject*) hash_);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
+    m->stopHash(hash);
     Py_RETURN_NONE;
 }
 
-static PyObject *telehashbinder_broadcast(PyObject *self, 
+static PyObject *utpbinder_sendFile(PyObject *self, 
                                                    PyObject *args){
     PyObject *cobj=NULL;
-    char *location=NULL;
-    char *message=NULL;
-    if (!PyArg_ParseTuple(args, "Oss",&cobj,&location,&message)){
+    char *dest=NULL;
+    int port = 0;
+    char *fname=NULL;
+    PyByteArrayObject *hash_=NULL;
+    PyObject *handler=NULL;
+    if (!PyArg_ParseTuple(args, "OsisOO",&cobj,&dest,&port,&fname,
+                                        &hash_,&handler)){
         return NULL;
     }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
-    m->broadcast(location,message);
-    Py_RETURN_NONE;
+    if (!PyCallable_Check(handler)) {
+        PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+        return NULL;
+    } 
+    unsigned char* hash = (unsigned char *)
+                                PyByteArray_AsString((PyObject*) hash_);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
+    HandlerImpl *h = new HandlerImpl(handler);
+    int r = m->sendFile(dest,port,fname,hash,h);
+    return Py_BuildValue("i", r);
 }
 
 
-static PyObject *telehashbinder_start(PyObject *self, PyObject *args){
+static PyObject *utpbinder_start(PyObject *self, PyObject *args){
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
@@ -231,7 +189,7 @@ static PyObject *telehashbinder_start(PyObject *self, PyObject *args){
     if (!PyArg_ParseTuple(args, "O",&cobj)){
         return NULL;
     }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     Py_BEGIN_ALLOW_THREADS
         m->start();
     Py_END_ALLOW_THREADS
@@ -239,106 +197,82 @@ static PyObject *telehashbinder_start(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-static PyObject *telehashbinder_setStopFlag(PyObject *self, PyObject *args){
+static PyObject *utpbinder_setStopFlag(PyObject *self, PyObject *args){
     PyObject *cobj=NULL;
     int flag=0;
     if (!PyArg_ParseTuple(args, "Oi",&cobj,&flag)){
         return NULL;
     }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     m->setStopFlag(flag);
     Py_RETURN_NONE;
 }
 
-static PyObject *telehashbinder_finalize(PyObject *self, 
+static PyObject *utpbinder_getProgress(PyObject *self, 
+                                             PyObject *args){
+    PyObject *cobj=NULL;
+    PyByteArrayObject *hash_=NULL;
+    if (!PyArg_ParseTuple(args, "OO",&cobj,&hash_)){
+        return NULL;
+    }
+    unsigned char* hash = (unsigned char *)
+                             PyByteArray_AsString((PyObject*) hash_);
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
+    size_t s = m->getProgress(hash);
+    return Py_BuildValue("k", s);
+}
+
+static PyObject *utpbinder_finalize(PyObject *self, 
                                              PyObject *args){
     PyObject *cobj=NULL;
     if (!PyArg_ParseTuple(args, "O",&cobj)){
         return NULL;
     }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
-    ChannelHandlerFactoryImpl *h=(ChannelHandlerFactoryImpl *)
-                                           m->getChannelHandlerFactory();
-    ChannelHandlerImpl *b=(ChannelHandlerImpl *)
-                                           m->getBroadcastHandler();
-    delete b;
-    delete h;
+    Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     delete m;
     Py_RETURN_NONE;
 }
 
-static PyObject *telehashbinder_setGC(PyObject *self, 
-                                             PyObject *args){
-    int add=0;
-    if (!PyArg_ParseTuple(args, "i",&add)){
-        return NULL;
-    }
-    StorjTelehash::setGC(add);
-    Py_RETURN_NONE;
-}
-
-static PyObject *telehashbinder_gcollect(PyObject *self, 
-                                             PyObject *args){
-    StorjTelehash::gcollect();
-    Py_RETURN_NONE;
-}
-
-static PyObject *telehashbinder_getMyLocation(PyObject *self, 
-                                             PyObject *args){
-    PyObject *cobj=NULL;
-    if (!PyArg_ParseTuple(args, "O",&cobj)){
-        return NULL;
-    }
-    StorjTelehash *m=(StorjTelehash *)PyCapsule_GetPointer(cobj,NULL);
-    string loc;
-    m->getMyLocation(loc);
-    PyObject *p= Py_BuildValue("s",loc.c_str());
-    return p;
-}
-
-
 static PyMethodDef methods[] = {
-    {"init", telehashbinder_init, METH_VARARGS, 
+    {"init", utpbinder_init, METH_VARARGS, 
         "initialize"},
-    {"open_channel", telehashbinder_openChannel, METH_VARARGS,
-         "open a channel"},
-    {"add_broadcaster", telehashbinder_addBroadcaster, METH_VARARGS,
-         "add broadcaster"},
-    {"broadcast", telehashbinder_broadcast, METH_VARARGS,
-         "broadcast a message"},
-    {"start", telehashbinder_start, METH_VARARGS,
-         "start receiving loop"},
-    {"set_stopflag", telehashbinder_setStopFlag, METH_VARARGS,
+    {"regist_hash", utpbinder_registHash, METH_VARARGS,
+         "regist a acceptable hash"},
+    {"stop_hash", utpbinder_stopHash, METH_VARARGS,
+         "unregist a acceptable hash"},
+    {"send_file", utpbinder_sendFile, METH_VARARGS,
+         "start sending a file"},
+    {"start", utpbinder_start, METH_VARARGS,
+         "start receiving/downloading loop"},
+    {"set_stopflag", utpbinder_setStopFlag, METH_VARARGS,
          "stop receiving loop"},
-    {"finalize", telehashbinder_finalize, METH_VARARGS
+    {"get_serverport", utpbinder_getServerPort, METH_VARARGS
+        , "get listening port"},
+    {"get_progress", utpbinder_getProgress, METH_VARARGS
+        , "get downloaded/uploaded size"},
+    {"finalize", utpbinder_finalize, METH_VARARGS
         , "finalize C object."},
-    {"set_gc", telehashbinder_setGC, METH_VARARGS
-        , "set to run GC or not."},
-    {"gcollect", telehashbinder_gcollect, METH_VARARGS
-        , "run force GC."},
-    {"get_my_location", telehashbinder_getMyLocation, METH_VARARGS
-        , "get my location."},
     {NULL, NULL, 0, NULL}
 };
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef modules = {
    PyModuleDef_HEAD_INIT,
-   "telehashbinder",   /* name of module */
-   "Messaging Layer in Telehash", /* module documentation, may be NULL */
+   "utpbinder",   /* name of module */
+   "File Transfer library by libutp", /* module documentation, may be NULL */
    -1,       /* size of per-interpreter state of the module,
                 or -1 if the module keeps state in global variables. */
    methods
    };
 
-extern "C" PyMODINIT_FUNC PyInit_telehashbinder(void){
+extern "C" PyMODINIT_FUNC PyInit_utpbinder(void){
      return PyModule_Create(&modules);
 }
 
 #else
 extern "C" PyMODINIT_FUNC
-inittelehashbinder(void) {
-    (void) Py_InitModule("telehashbinder", methods);
+initutpbinder(void) {
+    (void) Py_InitModule("utpbinder", methods);
 }
 
 #endif

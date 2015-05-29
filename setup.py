@@ -47,10 +47,10 @@ test_requirements = [
 ]
 
 
-module = Extension('storjutp',
-                   ['cxx/utpbinder_python.cpp',
+module = Extension('utpbinder',
+                   ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
                     'cxx/Storjutp.cpp'],
-                   libraries=['utp'],
+                   extra_link_args=['libutp/libutp.a'],
                    include_dirs=['libutp',
                                  'cxx'],
                    library_dirs=['libutp'],
@@ -87,7 +87,7 @@ setup(
     author_email='utamaro.sisho@gmail.com',
     description='File Transfer Library by uTP.',
     long_description=LONG_DESCRIPTION,
-    packages=['storuutp'],
+    packages=['storjutp'],
     cmdclass={'test': PyTest},
     ext_modules=[module],
     install_requires=install_requirements,
