@@ -355,10 +355,10 @@ void Storjutp::stopHash(unsigned char* hash){
 
 int Storjutp::sendFile(string dest, int port, string fname, 
                              unsigned char* hash, Handler *handler){
-    FILE *fp = fopen(fname.c_str(), "rb");
-    if(!fp) return -1;
     struct addrinfo *res = getAddrInfo(dest, port);
     if(!res) return -1;
+    FILE *fp = fopen(fname.c_str(), "rb");
+    if(!fp) return -1;
     SendFileInfo *f= new SendFileInfo();
     fileInfos.push_back(f);
     f->setFP(fp);
