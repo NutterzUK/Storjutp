@@ -1,0 +1,197 @@
+
+
+<!doctype html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utpbinder &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="top" title=".  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">.  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for utpbinder</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  uTP file transfer library binder implmeneted in C++.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="init"><a class="viewcode-back" href="../utpbinder.html#utpbinder.init">[docs]</a><span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">port</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    init.</span>
+
+<span class="sd">    :param int port: port number to be listened packets. if 0, port number is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="regist_hash"><a class="viewcode-back" href="../utpbinder.html#utpbinder.regist_hash">[docs]</a><span class="k">def</span> <span class="nf">regist_hash</span><span class="p">(</span><span class="n">cobj</span><span class="p">,</span> <span class="nb">hash</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="nb">dir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    register acceptable file hash.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :param bytearray hash: acceputable file hash.</span>
+<span class="sd">    :param method handler: Handler called when finish receiving a file.</span>
+<span class="sd">    handler method must have hash(bytearray) and errormessage(str)</span>
+<span class="sd">    arguments.</span>
+<span class="sd">    :param str dir:  directory where file will be saved.</span>
+<span class="sd">    :return 0 if success</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="get_serverport"><a class="viewcode-back" href="../utpbinder.html#utpbinder.get_serverport">[docs]</a><span class="k">def</span> <span class="nf">get_serverport</span><span class="p">(</span><span class="n">cobj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get listening server port.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :return:  port number int.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="stop_hash"><a class="viewcode-back" href="../utpbinder.html#utpbinder.stop_hash">[docs]</a><span class="k">def</span> <span class="nf">stop_hash</span><span class="p">(</span><span class="n">cobj</span><span class="p">,</span> <span class="nb">hash</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    unregister a hash and stop sending/downloading  file.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :param bytearray hash: acceputable file hash to be unregistered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="start"><a class="viewcode-back" href="../utpbinder.html#utpbinder.start">[docs]</a><span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="n">cobj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    star to receive/send netowrk packets in the current thread..</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="set_stopflag"><a class="viewcode-back" href="../utpbinder.html#utpbinder.set_stopflag">[docs]</a><span class="k">def</span> <span class="nf">set_stopflag</span><span class="p">(</span><span class="n">cobj</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    set stopFlag that stop/continue to receive\send network packets loop..</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :param int flag: 1 if to stop. others if to run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="finalize"><a class="viewcode-back" href="../utpbinder.html#utpbinder.finalize">[docs]</a><span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="n">cobj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    destructor.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="send_file"><a class="viewcode-back" href="../utpbinder.html#utpbinder.send_file">[docs]</a><span class="k">def</span> <span class="nf">send_file</span><span class="p">(</span><span class="n">cobj</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="nb">hash</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    start to send a file.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :param int port: destination port to be sent.</span>
+<span class="sd">    :param str fname: file name to be sent.</span>
+<span class="sd">    :param bytearray hash: file hash.</span>
+<span class="sd">    :param method handler: Handler called when finishing uploading.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="get_progress"><a class="viewcode-back" href="../utpbinder.html#utpbinder.get_progress">[docs]</a><span class="k">def</span> <span class="nf">get_progress</span><span class="p">(</span><span class="n">cobj</span><span class="p">,</span> <span class="nb">hash</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get downloaded/uploaded size.</span>
+
+<span class="sd">    :param Object cobj: pointer of StorjTelehash instnace returned by init()</span>
+<span class="sd">    :param bytearray hash: file hash to be checked.</span>
+<span class="sd">    :return: downloaded/uploaded file size</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">.  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Author.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

@@ -31,8 +31,8 @@ import types
 import threading
 import logging
 
-import utpbinder
-# import telehashbinder #for creating document
+#from . import utpbinder
+import utpbinder #for creating document
 
 log_fmt = '%(filename)s:%(lineno)d %(funcName)s() %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=log_fmt)
@@ -67,12 +67,12 @@ class Storjutp(object):
         """
         register acceptable file hash.
 
-       :param bytearray hash: acceputable file hash.
-       :param method handler: Handler called when finish receiving a file.
-       handler method must have hash(bytearray) and errormessage(str)
-       arguments.
-       :param str dir:  directory where file will be saved.
-        :return 0 if success
+        :param bytearray hash: acceputable file hash.
+        :param method handler: Handler called when finish receiving a file.
+                               handler method must have hash(bytearray)
+                               and errormessage(str) arguments.
+        :param str dir: directory where file will be saved.
+        :return: 0 if success
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()

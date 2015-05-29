@@ -26,7 +26,7 @@ To run the associated tests:
 
 To run the associated tests for python:
 
-    $ PYTHONPATH=. py.test -q tests/test.py -s
+    $ PYTHONPATH=. py.test -q tests/test_storjutp.py -s
 
 
 for Windows OS, [Cygwin](https://www.cygwin.com/) must be installed first.
@@ -51,7 +51,8 @@ After that run c:\cygwin\cygwin.bat, where you can install and run StorjTelehash
 
 ## Usage
 
-API Document for abstract messaging layer is [here](https://rawgit.com/StorjPlatform/storjutp/master/docs/html/storjutp.html)
+API Document for utpbinder is [here](https://rawgit.com/StorjPlatform/Storjutp/master/docs/html/utpbinder.html)
+API Document for storjutp is [here](https://rawgit.com/StorjPlatform/Storjutp/master/docs/html/storjutp.html)
 
 # Contribution
 Improvements to the codebase and pull requests are encouraged.

@@ -137,6 +137,7 @@ void errorTest1(){
     unsigned char dummy[32], dummy2[32];
     int i = 0, j=0;
     string fname, fname2;
+    size_t sss;
     
     generateHash(dummy, fname);
     unlink(fname.c_str());
@@ -164,7 +165,9 @@ void errorTest1(){
     s1.stopHash(dummy);
     r = s1.registHash(dummy, &te1);
     ok(!r, "re-regist after unregist test");
-
+    sss = s1.getProgress(dummy);
+    ok(sss == 0, "getPgoress to not started file check");
+    
     Storjutp s2;
     TestHandler te2(true, true);
 
@@ -176,14 +179,13 @@ void errorTest1(){
     r = s2.sendFile("127.0.0.1", 12345, 
                "tests/nonexist.dat", dummy, &te2);   
     ok(r, "prepare to send non-exist file check");
-    size_t sss = s2.getProgress(dummy);
+    sss = s2.getProgress(dummy);
     ok(sss == 0, "getPgoress to non exist file check");
     
     r = s2.sendFile("127.0.0.1", 12345, 
                "tests/rand.dat", dummy2, &te2);   
     ok(!r, "start to send file test");
-    sss = s2.getProgress(dummy2);
-    ok(sss == 0, "getPgoress to not started file check");
+
 
     thread t1=std::thread([&](){
         s1.start();
@@ -203,6 +205,7 @@ void errorTest1(){
     ok(!te1.finished, "finish check 1");
     ok(te2.finished, "finish check 2");
     ok(!deleted, "handler is not deleted check");
+    s1.stopHash(dummy);
 
     r = s2.sendFile("127.0.0.1", 66666, 
                "tests/rand.dat", dummy2, &te2);   
@@ -418,6 +421,7 @@ int main (int argc, char *argv[]) {
     fileInfoTest();
     errorTest1();
     timeoutTest();
+    forceStopTest();
     headerTwiceTest();
     sendTest();
     done_testing();

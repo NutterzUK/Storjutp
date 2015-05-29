@@ -47,7 +47,7 @@ test_requirements = [
 ]
 
 
-module = Extension('utpbinder',
+module = Extension('storjutp.utpbinder',
                    ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
                     'cxx/Storjutp.cpp'],
                    extra_link_args=['libutp/libutp.a', '-lrt'],
