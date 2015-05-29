@@ -57,8 +57,11 @@ void EvaluatePyObject(PyObject *obj, unsigned char hash[32],
     if(!PyCallable_Check(obj)){
         LOG("not callable object");
     }
-
+#if PY_MAJOR_VERSION >= 3
     PyObject *arglist = Py_BuildValue("(y#z)", hash, 32, errorMessage);
+#else
+    PyObject *arglist = Py_BuildValue("(z#z)", hash, 32, errorMessage);
+#endif
     if(!arglist){
         LOG("failed to build arg list");
     }

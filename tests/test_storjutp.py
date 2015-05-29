@@ -59,8 +59,8 @@ class TestStorjutp(object):
         self.receiver_finish = True
 
     def test_storjutp(self):
-        sender_finish = False
-        receiver_finish = False
+        self.sender_finish = False
+        self.receiver_finish = False
         fname = \
             'C8C9CACBCCCDCECFD0D1D2D3D4D5D6D7D8D9DADBDCDDDEDFE0E1E2E3E4E5E6E7'
         dummy = bytearray([i for i in range(200, 232)])
