@@ -49,17 +49,21 @@ void *log_(const char *file, int line, const char *function,
   return NULL;
 }
 
+bool deleted = false;
+
 class TestHandler : public Handler{
 private:
     bool isSender;
     bool hasError;
+    int willDeleted;
 public:
     bool finished;
 
-	TestHandler(bool isSender, bool hasError = false){
+	TestHandler(bool isSender, bool hasError = false, int willDeleted=0){
         this->isSender = isSender;
         this->hasError = hasError;
         finished = false;
+        this->willDeleted = willDeleted;
 	}
 	
 	int on_finish(unsigned char *hash, const char *error){
@@ -74,10 +78,11 @@ public:
             ok( error==NULL, "no error on sending.");
         }
         finished = true;
-        return 0;
+        return willDeleted;
 	}
     
     ~TestHandler(){
+        deleted = true;
     }
 };
 
@@ -171,10 +176,14 @@ void errorTest1(){
     r = s2.sendFile("127.0.0.1", 12345, 
                "tests/nonexist.dat", dummy, &te2);   
     ok(r, "prepare to send non-exist file check");
-
+    size_t sss = s2.getProgress(dummy);
+    ok(sss == 0, "getPgoress to non exist file check");
+    
     r = s2.sendFile("127.0.0.1", 12345, 
                "tests/rand.dat", dummy2, &te2);   
     ok(!r, "start to send file test");
+    sss = s2.getProgress(dummy2);
+    ok(sss == 0, "getPgoress to not started file check");
 
     thread t1=std::thread([&](){
         s1.start();
@@ -182,6 +191,7 @@ void errorTest1(){
     thread t2=std::thread([&](){
         s2.start();
     });
+    deleted = false;
     te1.finished=false;
     sleep(10);
     s1.setStopFlag(1);
@@ -192,6 +202,7 @@ void errorTest1(){
     ok(!fp, "not registered file test");
     ok(!te1.finished, "finish check 1");
     ok(te2.finished, "finish check 2");
+    ok(!deleted, "handler is not deleted check");
 
     r = s2.sendFile("127.0.0.1", 66666, 
                "tests/rand.dat", dummy2, &te2);   
@@ -205,8 +216,8 @@ void errorTest1(){
     ok(te2.finished, "finish check 2");
 }
 
-void errorTest2(){
-    LOG("starting errorTest2");
+void timeoutTest(){
+    LOG("starting timeout test");
     unsigned char dummy[32];
     string fname;
     
@@ -218,9 +229,9 @@ void errorTest2(){
     s1.registHash(dummy, &te1);
 
     Storjutp s2(23432);
-    TestHandler te2(true, true);
+    TestHandler *te3 = new TestHandler(true, true, 1);
     s2.sendFile("127.0.0.1", s1.server_port, 
-                "tests/rand.dat", dummy, &te2);   
+                "tests/rand.dat", dummy, te3);   
 
     thread t1=std::thread([&](){
         s1.start();
@@ -234,11 +245,11 @@ void errorTest2(){
     t1.join();
     t2.join();
     ok(!te1.finished, "finish check 1");
-    ok(te2.finished, "finish check 2");
+    ok(deleted, "handler is deleted check 2");
 }
 
-void errorTest3(){
-    LOG("starting errorTest3");
+void headerTwiceTest(){
+    LOG("starting reading hedear twice Test");
     unsigned char dummy[32];
     string fname;
     
@@ -271,6 +282,40 @@ void errorTest3(){
        "file equality between original and copyied check");
 }
 
+void forceStopTest(){
+    LOG("starting force Stop");
+    unsigned char dummy[32];
+    string fname;
+    
+    generateHash(dummy, fname);
+    unlink(fname.c_str());
+    Storjutp s1(12345);
+    LOG("%d",s1.server_port);
+    TestHandler te1(false, true);
+    s1.registHash(dummy, &te1);
+
+    Storjutp s2;
+    TestHandler te2(true, true);
+    s2.sendFile("127.0.0.1", s1.server_port, 
+               "tests/rand.dat", dummy, &te2);   
+
+    thread t1=std::thread([&](){
+        s1.start();
+    });
+    thread t2=std::thread([&](){
+        s2.start();
+    });
+    sleep(1);
+    s1.stopHash(dummy);
+    sleep(10);
+    s1.setStopFlag(1);
+    s2.setStopFlag(1);
+    t1.join();
+    t2.join();
+    LOG("fname = %s", fname.c_str());
+    ok(te1.finished, "finish check 1");
+    ok(te2.finished, "finish check 2");
+}
 
 
 void sendTest(){
@@ -372,8 +417,8 @@ void fileInfoTest(){
 int main (int argc, char *argv[]) {
     fileInfoTest();
     errorTest1();
-    errorTest2();
-    errorTest3();
+    timeoutTest();
+    headerTwiceTest();
     sendTest();
     done_testing();
 }
