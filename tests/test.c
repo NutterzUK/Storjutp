@@ -165,8 +165,6 @@ void errorTest1(){
     s1.stopHash(dummy);
     r = s1.registHash(dummy, &te1);
     ok(!r, "re-regist after unregist test");
-    sss = s1.getProgress(dummy);
-    ok(sss == 0, "getPgoress to not started file check");
     
     Storjutp s2;
     TestHandler te2(true, true);
@@ -274,6 +272,27 @@ void headerTwiceTest(){
     thread t2=std::thread([&](){
         s2.start();
     });
+    
+    sleep(1);
+    size_t s = 0;
+    s1.setStopFlag(1);
+    s2.setStopFlag(1);
+    t1.join();
+    t2.join();
+    s = s1.getProgress(dummy);
+    LOG("progress = %ld",s);
+    ok(0 < s && s < 25424239, "receiver getPgoress check");
+    s = s2.getProgress(dummy);
+    LOG("progress = %ld",s);
+    ok(0 < s && s < 25424239, "sender getPgoress check");
+    s1.setStopFlag(0);
+    s2.setStopFlag(0);
+    t1=std::thread([&](){
+        s1.start();
+    });
+    t2=std::thread([&](){
+        s2.start();
+    });
     sleep(20);
     s1.setStopFlag(1);
     s2.setStopFlag(1);
@@ -344,15 +363,7 @@ void sendTest(){
     thread t2=std::thread([&](){
         s2.start();
     });
-    sleep(1);
-    size_t s = 0;
-    s = s1.getProgress(dummy);
-    LOG("progress = %ld",s);
-    ok(0 < s && s < 25424239, "receiver getPgoress check");
-    s = s2.getProgress(dummy);
-    LOG("progress = %ld",s);
-    ok(0 < s && s < 25424239, "sender getPgoress check");
-    sleep(10);
+    sleep(60);
     s1.setStopFlag(1);
     s2.setStopFlag(1);
     t1.join();

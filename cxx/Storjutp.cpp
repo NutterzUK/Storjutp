@@ -229,10 +229,6 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
 		case UTP_STATE_DESTROYING:
         {
             LOG("socket is destyoed fd=%d",sutp->fd);
-            if(_fi){
-              	_fi->socket = NULL;
-                sutp->deleteFileInfo(_fi);
-            }
 			break;
         }
     }
@@ -333,9 +329,14 @@ FileInfo *Storjutp::findFileInfo(unsigned char* hash){
 
 size_t Storjutp::getProgress(unsigned char* hash){
     FileInfo *fi = findFileInfo(hash);
-    
-    if(fi){
-        return fi->getProgress();
+    ReceiveFileInfo *rfi = dynamic_cast<ReceiveFileInfo *>(fi);
+    SendFileInfo *sfi = dynamic_cast<SendFileInfo *>(fi);
+
+    if(rfi){
+        return rfi->getProgress();
+    }
+    if(sfi){
+        return sfi->getProgress();
     }
     return 0;
 }

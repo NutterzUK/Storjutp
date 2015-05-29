@@ -104,12 +104,6 @@ public:
      */
     bool equal(unsigned char h[32]);
 
-    /**
-     * get downloaded/uploaded size.
-     * 
-     * @return downloaded/uploaded file size
-     */
-    virtual size_t getProgress()=0;
 };
 
 /**
@@ -295,10 +289,6 @@ public:
      */
     virtual bool isCompleted();
     
-    /**
-     * @return always 0
-     */
-    size_t getProgress();
 };
 
  /**

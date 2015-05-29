@@ -88,7 +88,7 @@ class TestStorjutp(object):
         logging.debug('reciever progress : %d' % size2)
         assert 0 < size1 and size1 < 25424239
         assert 0 < size2 and size2 < 25424239
-        time.sleep(10)
+        time.sleep(60)
         assert filecmp.cmp(fname, "tests/rand.dat")
 
         assert self.receiver_finish

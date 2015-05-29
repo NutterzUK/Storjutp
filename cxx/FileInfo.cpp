@@ -162,7 +162,3 @@ size_t UnknownFileInfo::putByte(const byte* b, size_t len){
 bool UnknownFileInfo::isCompleted(){
     return false;
 }
-
-size_t UnknownFileInfo::getProgress(){
-    return 0;
-}
