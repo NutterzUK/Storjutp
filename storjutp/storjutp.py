@@ -39,31 +39,23 @@ logging.basicConfig(level=logging.DEBUG, format=log_fmt)
 
 
 class Storjutp(object):
-
     """
-    Concrete Messaging layer for Storj Platform in Telehash.
-    Everything in telehash-C is not thread safe. So run function after
+    Class for managing file transfer.
+    Everything in utpbinder is not thread safe. So run function after
     stop a thread, and run a thread again in all functions.
     """
-
-    """ description about this messaging implementation which is
-    used in sublcass.
-    """
-
     def __init__(self, port=0):
         """
         init
 
         :param ChannelHandler broadcast_handler: broadcast handler.
-        :param keywords keywords: 'port=int' to be listened packets.
-        if 0, port number
-        is seletcted randomly.
+        :param int port: port number  to be listened packets.
         """
         self.cobj = utpbinder.init(port)
         self.start_thread()
 
     def start_thread(self):
-        """star to receive netowrk packets in a thread. """
+        """star to receive/send  packets in a thread. """
 
         utpbinder.set_stopflag(self.cobj, 0)
         self.thread = threading.Thread(
@@ -73,11 +65,14 @@ class Storjutp(object):
 
     def regist_hash(self, hash, handler, directory='.'):
         """
-        open a channel with a handler.
+        register acceptable file hash.
 
-        :param str location: json str where you want to open a channel.
-        :param str name: channel name that you want to open .
-        :param ChannelHandler handler: channel handler.
+       :param bytearray hash: acceputable file hash.
+       :param method handler: Handler called when finish receiving a file.
+       handler method must have hash(bytearray) and errormessage(str)
+       arguments.
+       :param st dir:  directory where file will be saved.
+        :return 0 if success
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
@@ -87,11 +82,9 @@ class Storjutp(object):
 
     def stop_hash(self, hash):
         """
-        open a channel with a handler.
+        unregister a hash and stop sending/downloading  file.
 
-        :param str location: json str where you want to open a channel.
-        :param str name: channel name that you want to open .
-        :param ChannelHandler handler: channel handler.
+        :param bytearray hash: acceputable file hash to be unregistered.
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
@@ -100,11 +93,10 @@ class Storjutp(object):
 
     def get_progress(self, hash):
         """
-        open a channel with a handler.
+        get downloaded/uploaded size.
 
-        :param str location: json str where you want to open a channel.
-        :param str name: channel name that you want to open .
-        :param ChannelHandler handler: channel handler.
+        :param bytearray hash: file hash to be checked.
+        :return: downloaded/uploaded file size
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
@@ -114,12 +106,13 @@ class Storjutp(object):
 
     def send_file(self, dest, port, fname, hash, handler):
         """
-        send a broadcast request to broadcaster.
-        After calling this method, broadcast messages will be send continually.
+        prepare to send a file.
 
-        :param str location: json str where you want to request a broadcast.
-        :param  int add: if 0, request to not to  broadcast. request to
-                          broaadcast if others.
+        :param str dest: destination ip address.
+        :param int port: destination port to be sent.
+        :param str fname: file name to be sent.
+        :param bytearray hash: file hash.
+        :param method handler: Handler called when finishing uploading.
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
@@ -129,12 +122,8 @@ class Storjutp(object):
 
     def get_serverport(self):
         """
-        send a broadcast request to broadcaster.
-        After calling this method, broadcast messages will be send continually.
-
-        :param str location: json str where you want to request a broadcast.
-        :param  int add: if 0, request to not to  broadcast. request to
-                          broaadcast if others.
+        get listening server port.
+        :return:  port number int.
         """
         return utpbinder.get_serverport(self.cobj)
 
