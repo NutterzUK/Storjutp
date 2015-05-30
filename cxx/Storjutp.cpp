@@ -358,14 +358,17 @@ int Storjutp::sendFile(string dest, int port, string fname,
     struct addrinfo *res = getAddrInfo(dest, port);
     if(!res) return -1;
     FILE *fp = fopen(fname.c_str(), "rb");
-    if(!fp) return -1;
+    if(!fp){
+        freeaddrinfo(res);
+        return -1;
+    }
     SendFileInfo *f= new SendFileInfo();
     fileInfos.push_back(f);
     f->setFP(fp);
     LOG("sending %s at fd=%d",fname.c_str(), fd);
     utp_socket *socket = utp_create_socket(ctx);
     utp_connect(socket, res->ai_addr, res->ai_addrlen);
-  	freeaddrinfo(res);
+    freeaddrinfo(res);
     utp_set_userdata(socket, f);
     memcpy(f->hash, hash, 32);
     f->handler = handler;
