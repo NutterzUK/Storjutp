@@ -76,7 +76,7 @@ void EvaluatePyObject(PyObject *obj, unsigned char hash[32],
     
 class HandlerImpl : public Handler{
 private:
-    PyObject *pyHandler=NULL;
+    PyObject *pyHandler;
     
 public:
 	HandlerImpl(PyObject *pyHandler){
