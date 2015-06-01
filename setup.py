@@ -34,7 +34,6 @@ from distutils.core import setup, Extension
 
 LONG_DESCRIPTION = open('README.md').read()
 VERSION = '1.0'
-
 os.environ['CC'] = 'g++'
 
 install_requirements = []
@@ -46,14 +45,23 @@ test_requirements = [
     'coveralls'
 ]
 
+libutp_src = [
+    'libutp/utp_utils.cpp',
+    'libutp/utp_api.cpp',
+    'libutp/utp_callbacks.cpp',
+    'libutp/utp_hash.cpp',
+    'libutp/utp_packedsockaddr.cpp',
+    'libutp/utp_internal.cpp',
+]
 
-module = Extension('storjutp.utpbinder',
-                   ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
-                    'cxx/Storjutp.cpp'],
-                   extra_link_args=['libutp/libutp.a', '-lrt'],
+src = ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
+       'cxx/Storjutp.cpp']
+
+module = Extension('storjutp.utpbinder', src + libutp_src, 
+                   extra_link_args=['-lrt'],
+                   extra_compile_args=['-DPOSIX'],
                    include_dirs=['libutp',
                                  'cxx'],
-                   library_dirs=['libutp'],
                    )
 
 

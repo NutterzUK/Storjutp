@@ -17,17 +17,17 @@ This requires
 
 To compile 
 
-    $ make python
+    $ python setup.py install
     
 To run the associated tests:
 
+    $ git submodule update --recursive --init
     $ make test
     $ LD_LIBRARY_PATH=libtap ./test
 
 To run the associated tests for python:
 
-    $ PYTHONPATH=. py.test -q tests/test_storjutp.py -s
-
+    $ coverage run setup.py test -a "--doctest-modules --pep8 -v tests/ storjutp/"
 
 for Windows OS, [Cygwin](https://www.cygwin.com/) must be installed first.
 

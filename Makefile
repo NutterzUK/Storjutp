@@ -20,10 +20,6 @@ test: cxx/Storjutp.cpp cxx/FileInfo.cpp tests/test.c cxx/Storjutp.cpp cxx/Storju
 	cd libtap;make
 	$(CPP) $(INCLUDE) ${CFLAGS}  ${TEST_CPPFLAGS}  -o $@ $^  ${LDFLAGS}   ${TEST_LDFLAGS} -std=c++11 -pthread 
 
-python: ${FILES} cxx/utpbinder_python.cpp cxx/Storjutp.cpp cxx/Storjutp.h
-	cd libutp;make
-	python setup.py build_ext -i
-
 clean:
 	rm -f *.o
 	rm -f bin/*
