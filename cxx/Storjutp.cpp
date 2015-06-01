@@ -88,7 +88,7 @@ uint64 callback_on_read(utp_callback_arguments *a){
     FileInfo *_fi= (FileInfo *)utp_get_userdata(a->socket);
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
 
-   	size_t left = a->len;
+    size_t left = a->len;
     const byte *p = a->buf;
 
     if(!_fi){
@@ -132,7 +132,7 @@ void callHandler(FileInfo *fi, const char *message){
     
 
 uint64 callback_on_error(utp_callback_arguments *a){
-	LOG("Error: %s", utp_error_code_names[a->error_code]);
+    LOG("Error: %s", utp_error_code_names[a->error_code]);
     FileInfo *fi = (FileInfo *)utp_get_userdata(a->socket);
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
 
@@ -146,14 +146,14 @@ uint64 callback_on_error(utp_callback_arguments *a){
 }
 
 uint64 callback_on_accept(utp_callback_arguments *a){
-   	LOG("on_accept");
+    LOG("on_accept");
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
     if(sutp->isTesting == 1){
         sutp->forceNoResponse = true;
     }
     //from server to client
     // do return 0, or not accepted.
-	return 0;
+    return 0;
 }
 
 void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
@@ -198,22 +198,22 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
     FileInfo *_fi = (FileInfo *)utp_get_userdata(a->socket);
     Storjutp *sutp = (Storjutp *) utp_context_get_userdata(a->context);
 
-	switch (a->state) {
-		case UTP_STATE_CONNECT:
-            //fall through
-		case UTP_STATE_WRITABLE:
+    switch (a->state) {
+        case UTP_STATE_CONNECT:
+        //fall through
+        case UTP_STATE_WRITABLE:
         //from client to server
         {
             SendFileInfo *ufi = dynamic_cast<SendFileInfo *>(_fi);
             if(ufi){
-	            sendBytes(a->socket, ufi, sutp);
+	        sendBytes(a->socket, ufi, sutp);
             }
             break;
         }
         //called when utp_closed from the counterparty.
-		case UTP_STATE_EOF:
+        case UTP_STATE_EOF:
         {
-        	LOG("state_eof fd=%d",sutp->fd);
+            LOG("state_eof fd=%d",sutp->fd);
             if(_fi && _fi->handler){
                 const char *reason = NULL;
                 if(!_fi->isCompleted()){
@@ -223,17 +223,16 @@ uint64 callback_on_state_change(utp_callback_arguments *a){
             }
             sutp->deleteFileInfo(_fi);
             utp_close(a->socket);
-			break;
+            break;
          }
         //called from destructor of utp_socket.
-		case UTP_STATE_DESTROYING:
+         case UTP_STATE_DESTROYING:
         {
             LOG("socket is destyoed fd=%d",sutp->fd);
-			break;
+            break;
         }
     }
-
-	return 0;
+    return 0;
 }
 
 
@@ -243,15 +242,15 @@ uint64 callback_sendto(utp_callback_arguments *a){
         sendto(sutp->fd, a->buf, a->len, 0,
                a->address, a->address_len);
     }
-	return 0;
+    return 0;
 }
 
 struct addrinfo* getAddrInfo(string addr, int port){
     struct addrinfo hints, *res;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_protocol = IPPROTO_UDP;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
     
     int error = 0;
     char p[10];
@@ -274,11 +273,11 @@ Storjutp::Storjutp(int port) {
     isTesting = 0;
     forceNoResponse = false;
     ctx = utp_init(2);
-  	utp_set_callback(ctx, UTP_ON_READ, &callback_on_read);
-  	utp_set_callback(ctx, UTP_ON_ACCEPT, &callback_on_accept);
+    utp_set_callback(ctx, UTP_ON_READ, &callback_on_read);
+    utp_set_callback(ctx, UTP_ON_ACCEPT, &callback_on_accept);
     utp_set_callback(ctx, UTP_ON_ERROR, &callback_on_error);
     utp_set_callback(ctx, UTP_ON_STATE_CHANGE,&callback_on_state_change);
-  	utp_set_callback(ctx, UTP_SENDTO, &callback_sendto);
+    utp_set_callback(ctx, UTP_SENDTO, &callback_sendto);
 
     fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     utp_context_set_userdata(ctx, this);
@@ -323,7 +322,7 @@ FileInfo *Storjutp::findFileInfo(unsigned char* hash){
     }
     if(match){
         return *itr;
-	}
+    }
     return NULL;
 }
 
@@ -384,8 +383,8 @@ void Storjutp::setStopFlag(int flag){
 void Storjutp::start(){
     LOG("running port=%d fd=%d", server_port, fd);
     unsigned char socket_data[BUFSIZE];
-   	struct sockaddr_in src_addr;
-   	socklen_t addrlen = sizeof(src_addr);
+    struct sockaddr_in src_addr;
+    socklen_t addrlen = sizeof(src_addr);
     struct pollfd fds[1];
   
     while(!stopFlag) {
@@ -423,7 +422,7 @@ Storjutp::~Storjutp() {
         if((*itr)->socket) utp_set_userdata((*itr)->socket, NULL);
         delete *itr;
     }
- 	if(ctx) utp_destroy(ctx);
+    if(ctx) utp_destroy(ctx);
 }
 
 
