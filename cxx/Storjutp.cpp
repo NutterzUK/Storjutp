@@ -36,7 +36,7 @@
 #include <poll.h>
 #include <sys/ioctl.h>
 #include <assert.h>
-#include "Storjutp.h"
+#include "Storjutp.hpp"
 
 #define TIMEOUT 500
 #define BUFSIZE 65536

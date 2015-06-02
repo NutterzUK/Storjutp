@@ -28,7 +28,7 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include "Storjutp.h"
+#include "Storjutp.hpp"
 
 
 FileInfo::FileInfo(){

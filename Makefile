@@ -1,5 +1,4 @@
-CPP=g++
-CFLAGS+=-g  -ggdb3 -Wall -Wextra -Wno-unused-parameter -DDEBUG -fstack-check
+CFLAGS+=-g  -ggdb3 -Wall -Wextra -Wno-unused-parameter -DDEBUG
 INCLUDE+=-Ilibutp -Icxx
 LDFLAGS += libutp/libutp.a
 TEST_LDFLAGS= -Llibtap -ltap 
@@ -15,11 +14,15 @@ ifeq ($(strip $(lrt)),0)
   LDFLAGS += -lrt
 endif
 
-test: cxx/Storjutp.cpp cxx/FileInfo.cpp tests/test.c cxx/Storjutp.cpp cxx/Storjutp.h
+test: cxx/FileInfo.o tests/test.o cxx/Storjutp.o
 	cd libutp;make
 	cd libtap;make
-	$(CPP) $(INCLUDE) ${CFLAGS}  ${TEST_CPPFLAGS}  -o $@ $^  ${LDFLAGS}   ${TEST_LDFLAGS} -std=c++11 -pthread 
+	$(CXX) $(INCLUDE) ${CFLAGS}  ${TEST_CPPFLAGS}  -o $@ $^  ${LDFLAGS}   ${TEST_LDFLAGS} -std=c++11 -pthread 
 
+.cpp.o: 
+	$(CXX) $(INCLUDE) ${CFLAGS}  ${TEST_CPPFLAGS}  -c $^ -o $@ -std=c++11 
 clean:
 	rm -f *.o
+	rm -f cxx/*.o
+	rm -f tests/*.o
 	rm -f bin/*

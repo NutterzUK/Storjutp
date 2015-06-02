@@ -28,7 +28,7 @@
 
 #include <list>  
 
-#include "Storjutp.h"
+#include "Storjutp.hpp"
 #include <Python.h>
 #include "bytesobject.h"
 

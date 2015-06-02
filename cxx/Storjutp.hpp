@@ -190,12 +190,6 @@ public:
  * class for storing information of a file that is receiving. 
  */
 class ReceiveFileInfo : public FileInfo {
-private:
-    /**
-     * header(hash + byte array representation of size) byte array
-     */
-    unsigned char header[40];
-
 public:
     /**
      * file size to be received.

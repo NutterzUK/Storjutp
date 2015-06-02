@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "Storjutp.h"
+#include "Storjutp.hpp"
 
 #include <unistd.h>
 #include <tap.h>
