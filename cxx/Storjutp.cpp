@@ -355,9 +355,13 @@ void Storjutp::stopHash(unsigned char* hash){
 int Storjutp::sendFile(string dest, int port, string fname, 
                              unsigned char* hash, Handler *handler){
     struct addrinfo *res = getAddrInfo(dest, port);
-    if(!res) return -1;
+    if(!res){
+        LOG("invalid address");
+        return -1;
+    }
     FILE *fp = fopen(fname.c_str(), "rb");
     if(!fp){
+        LOG("no file");
         freeaddrinfo(res);
         return -1;
     }

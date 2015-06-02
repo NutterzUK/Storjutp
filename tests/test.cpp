@@ -185,14 +185,14 @@ void errorTest1(){
     ok(!r, "start to send file test");
 
 
+    deleted = false;
+    te1.finished=false;
     thread t1=std::thread([&](){
         s1.start();
     });
     thread t2=std::thread([&](){
         s2.start();
     });
-    deleted = false;
-    te1.finished=false;
     sleep(10);
     s1.setStopFlag(1);
     s2.setStopFlag(1);
@@ -208,13 +208,15 @@ void errorTest1(){
     r = s2.sendFile("127.0.0.1", 66666, 
                "tests/rand.dat", dummy2, &te2);   
     ok(!r, "prepare to send file after finish check");
+    deleted = false;
+    te2.finished=false;
     t2=std::thread([&](){
         s2.start();
     });
     sleep(10);
     s2.setStopFlag(1);
     t2.join();
-    ok(te2.finished, "finish check 2");
+    ok(!te2.finished, "finish check 2");
 }
 
 void timeoutTest(){
