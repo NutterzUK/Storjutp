@@ -30,6 +30,7 @@
 
 from setuptools.command.test import test as TestCommand
 import os
+import sys
 from distutils.core import setup, Extension
 
 LONG_DESCRIPTION = open('README.md').read()
