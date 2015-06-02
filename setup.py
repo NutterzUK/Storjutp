@@ -60,6 +60,10 @@ rt = []
 if sys.platform != 'darwin':
     rt = ['-lrt']
 
+rt = []
+if sys.platform != 'darwin':
+        rt = ['-lrt']
+
 module = Extension('storjutp.utpbinder', src + libutp_src, 
                    extra_link_args=rt,
                    extra_compile_args=['-DPOSIX'],
