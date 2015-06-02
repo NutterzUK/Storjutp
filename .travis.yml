@@ -18,5 +18,5 @@ after_success:
   - coverage report -m --include="storjutp/*.py"
   - pip install cpp-coveralls
   - coveralls --exclude tests --exclude libutp --exclude libtap --exclude cxx/utpbinder_python.cpp --gcov-options '\-lp'
-  - LD_LIBRARY_PATH=libtap G_SLICE=always-malloc G_DEBUG=gc-friendly  valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --log-file=a.log --num-callers=40 ./test
+  - DYLD_LIBRARY_PATH=libtap G_SLICE=always-malloc G_DEBUG=gc-friendly  valgrind -v --tool=memcheck --leak-check=full --show-reachable=yes --log-file=a.log --num-callers=40 ./test
   - cat a.log
