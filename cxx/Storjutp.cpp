@@ -186,6 +186,7 @@ void sendBytes(utp_socket *s, SendFileInfo *fi, Storjutp *sutp){
     }while(len_u > 0);
 
     if(fi->isCompleted()){
+        LOG("finished sending fd=%d",sutp->fd);
         callHandler(fi, NULL);
 
         sutp->deleteFileInfo(fi);
