@@ -247,7 +247,7 @@ uint64 callback_sendto(utp_callback_arguments *a){
 }
 
 struct addrinfo* getAddrInfo(string addr, int port){
-    struct addrinfo hints, *res;
+    struct addrinfo hints, *res=NULL;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
