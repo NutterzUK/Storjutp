@@ -205,7 +205,7 @@ void errorTest1(){
     ok(!deleted, "handler is not deleted check");
     s1.stopHash(dummy);
 
-    r = s2.sendFile("127.0.0.1", 66666, 
+    r = s2.sendFile("127.0.0.1", 6666, 
                "tests/rand.dat", dummy2, &te2);   
     ok(!r, "prepare to send file after finish check");
     deleted = false;
