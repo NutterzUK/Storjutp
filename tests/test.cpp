@@ -283,10 +283,10 @@ void headerTwiceTest(){
     t2.join();
     s = s1.getProgress(dummy);
     LOG("progress = %ld",s);
-    ok(0 < s && s < 25424239, "receiver getPgoress check");
+    ok(0 <= s && s <= 25424239, "receiver getPgoress check");
     s = s2.getProgress(dummy);
     LOG("progress = %ld",s);
-    ok(0 < s && s < 25424239, "sender getPgoress check");
+    ok(0 <= s && s <= 25424239, "sender getPgoress check");
     s1.setStopFlag(0);
     s2.setStopFlag(0);
     t1=std::thread([&](){
@@ -329,7 +329,6 @@ void forceStopTest(){
     thread t2=std::thread([&](){
         s2.start();
     });
-    sleep(1);
     s1.stopHash(dummy);
     sleep(10);
     s1.setStopFlag(1);
