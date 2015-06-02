@@ -81,7 +81,6 @@ class TestStorjutp(object):
 
         s2.send_file('127.0.0.1', 12345, 'tests/rand.dat', dummy,
                      self.handler_sender)
-        time.sleep(10)
         size1 = s1.get_progress(dummy)
         size2 = s1.get_progress(dummy)
         logging.debug('reciever progress : %d' % size1)
