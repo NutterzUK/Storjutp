@@ -55,9 +55,12 @@ libutp_src = [
 
 src = ['cxx/utpbinder_python.cpp','cxx/FileInfo.cpp',
        'cxx/Storjutp.cpp']
+rt = []
+if sys.platform != 'darwin':
+    rt = ['-lrt']
 
 module = Extension('storjutp.utpbinder', src + libutp_src, 
-                   extra_link_args=['-lrt'],
+                   extra_link_args=rt,
                    extra_compile_args=['-DPOSIX'],
                    include_dirs=['libutp',
                                  'cxx'],
