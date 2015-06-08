@@ -165,18 +165,23 @@ static PyObject *utpbinder_sendFile(PyObject *self,
     char *dest=NULL;
     int port = 0;
     char *fname=NULL;
-    unsigned char *hash=NULL;
+    PyByteArrayObject *hash_=NULL;
     PyObject *handler=NULL;
-    if (!PyArg_ParseTuple(args, "Osiss#O",&cobj,&dest,&port,&fname,
-                                        &hash,32,&handler)){
+    if (!PyArg_ParseTuple(args, "OsisOO",&cobj,&dest,&port,&fname,
+                                        &hash_,&handler)){
         return NULL;
     }
     if (!PyCallable_Check(handler)) {
         PyErr_SetString(PyExc_TypeError, "parameter must be callable");
         return NULL;
     } 
+    if (!PyByteArray_Check(hash_)) {
+        PyErr_SetString(PyExc_TypeError, "parameter must be bytearray");
+        return NULL;
+    }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     HandlerImpl *h = new HandlerImpl(handler);
+    unsigned char *hash = (unsigned char*)PyByteArray_AsString((PyObject*) hash_);
     int r = m->sendFile(dest,port,fname,hash,h);
     return Py_BuildValue("i", r);
 }
