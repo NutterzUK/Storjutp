@@ -165,7 +165,7 @@ static PyObject *utpbinder_sendFile(PyObject *self,
     char *dest=NULL;
     int port = 0;
     char *fname=NULL;
-    char *hash_=NULL;
+    char *hash=NULL;
     PyObject *handler=NULL;
     if (!PyArg_ParseTuple(args, "Osiss#O",&cobj,&dest,&port,&fname,
                                         &hash,32,&handler)){
