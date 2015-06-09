@@ -31,8 +31,8 @@ import types
 import threading
 import logging
 
-# from . import utpbinder
-import utpbinder # for creating document
+from . import utpbinder
+# import utpbinder # for creating document
 
 log_fmt = '%(filename)s:%(lineno)d %(funcName)s() %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=log_fmt)
