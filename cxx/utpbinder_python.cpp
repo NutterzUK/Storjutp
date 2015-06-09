@@ -49,12 +49,6 @@ void *logging0(const char *file, int line, const char *function,
 #define LOG(fmt, ...)  logging0(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
 #endif
 
-#if PY_MAJOR_VERSION >= 3
-    #define BYTES "y"
-#else
-    #define BYTES "z"
-#endif
-
 void EvaluatePyObject(PyObject *obj, unsigned char hash[32], 
                         const char *errorMessage){
     PyGILState_STATE gstate;
@@ -63,7 +57,11 @@ void EvaluatePyObject(PyObject *obj, unsigned char hash[32],
     if(!PyCallable_Check(obj)){
         LOG("not callable object");
     }
-    PyObject *arglist = Py_BuildValue("("BYTES"#z)", hash, 32, errorMessage);
+#if PY_MAJOR_VERSION >= 3
+    PyObject *arglist = Py_BuildValue("(y#z)", hash, 32, errorMessage);
+#else
+    PyObject *arglist = Py_BuildValue("(z#z)", hash, 32, errorMessage);
+#endif
     if(!arglist){
         LOG("failed to build arg list");
     }
@@ -101,6 +99,7 @@ public:
     }
 };
 
+
 static PyObject *utpbinder_init(PyObject *self, PyObject *args){
     int port=0;
     
@@ -119,11 +118,11 @@ static PyObject *utpbinder_init(PyObject *self, PyObject *args){
 static PyObject *utpbinder_registHash(PyObject *self, 
                                                 PyObject *args){
     PyObject *cobj=NULL;
-    unsigned char *hash=NULL;
+    Py_buffer hash;
     PyObject *handler=NULL;
     char *dir=NULL;
 
-    if (!PyArg_ParseTuple(args, "O"BYTES"Os",&cobj,&hash,&handler,&dir)){
+    if (!PyArg_ParseTuple(args, "Oy*Os",&cobj,&hash,&handler,&dir)){
         return NULL;
     }
     if (!PyCallable_Check(handler)) {
@@ -132,7 +131,8 @@ static PyObject *utpbinder_registHash(PyObject *self,
     } 
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     HandlerImpl *h=new HandlerImpl(handler);
-    int r = m->registHash(hash,h,dir);
+    int r = m->registHash((unsigned char *)hash.buf,h,dir);
+    PyBuffer_Release(&hash);
     return Py_BuildValue("i", r);
 }
 
@@ -149,24 +149,25 @@ static PyObject *utpbinder_getServerPort(PyObject *self,
 static PyObject *utpbinder_stopHash(PyObject *self, 
                                                    PyObject *args){
     PyObject *cobj=NULL;
-    unsigned char *hash=NULL;
-    if (!PyArg_ParseTuple(args, "O"BYTES,&cobj,&hash)){
+    Py_buffer hash;
+    if (!PyArg_ParseTuple(args, "Oy*",&cobj,&hash)){
         return NULL;
     }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
-    m->stopHash(hash);
+    m->stopHash((unsigned char *)hash.buf);
+    PyBuffer_Release(&hash);
     Py_RETURN_NONE;
 }
 
 static PyObject *utpbinder_sendFile(PyObject *self, 
                                                    PyObject *args){
     PyObject *cobj=NULL;
-    char *dest=NULL;
+    Py_buffer hash;
     int port = 0;
     char *fname=NULL;
-    unsigned char *hash=NULL;
+    char *dest=NULL;
     PyObject *handler=NULL;
-    if (!PyArg_ParseTuple(args, "Osis"BYTES"O",&cobj,&dest,&port,&fname,
+    if (!PyArg_ParseTuple(args, "Osisy*O",&cobj,&dest,&port,&fname,
                                         &hash,&handler)){
         return NULL;
     }
@@ -176,7 +177,8 @@ static PyObject *utpbinder_sendFile(PyObject *self,
     } 
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     HandlerImpl *h = new HandlerImpl(handler);
-    int r = m->sendFile(dest,port,fname,hash,h);
+    int r = m->sendFile(dest,port,fname,(unsigned char *)(hash.buf),h);
+    PyBuffer_Release(&hash);
     return Py_BuildValue("i", r);
 }
 
@@ -211,12 +213,13 @@ static PyObject *utpbinder_setStopFlag(PyObject *self, PyObject *args){
 static PyObject *utpbinder_getProgress(PyObject *self, 
                                              PyObject *args){
     PyObject *cobj=NULL;
-    unsigned char *hash=NULL;
-    if (!PyArg_ParseTuple(args, "O"BYTES,&cobj,&hash)){
+    Py_buffer hash;
+    if (!PyArg_ParseTuple(args, "Oy*",&cobj,&hash)){
         return NULL;
     }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
-    size_t s = m->getProgress(hash);
+    size_t s = m->getProgress((unsigned char *)hash.buf);
+    PyBuffer_Release(&hash);
     return Py_BuildValue("k", s);
 }
 
