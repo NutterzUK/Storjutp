@@ -120,6 +120,10 @@ uint64 callback_on_read(utp_callback_arguments *a){
 }
 
 void callHandler(FileInfo *fi, const char *message){
+    ReceiveFileInfo *rfi = dynamic_cast<ReceiveFileInfo *>(fi);
+    if(rfi){
+        rfi->closeFP();
+    }
     if(fi && fi->handler){
         LOG("calling handler %x",fi->handler);
         int r = fi->handler->on_finish(fi->hash, message);
