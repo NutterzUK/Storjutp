@@ -103,8 +103,8 @@
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="c">#from . import utpbinder</span>
-<span class="kn">import</span> <span class="nn">utpbinder</span> <span class="c">#for creating document</span>
+<span class="c"># from . import utpbinder</span>
+<span class="kn">import</span> <span class="nn">utpbinder</span> <span class="c"># for creating document</span>
 
 <span class="n">log_fmt</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%(filename)s</span><span class="s">:</span><span class="si">%(lineno)d</span><span class="s"> </span><span class="si">%(funcName)s</span><span class="s">() </span><span class="si">%(message)s</span><span class="s">&#39;</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="n">log_fmt</span><span class="p">)</span>
@@ -139,9 +139,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        register acceptable file hash.</span>
 
-<span class="sd">        :param bytearray hash: acceputable file hash.</span>
+<span class="sd">        :param bytes hash: acceputable file hash.</span>
 <span class="sd">        :param method handler: Handler called when finish receiving a file.</span>
-<span class="sd">                               handler method must have hash(bytearray)</span>
+<span class="sd">                               handler method must have hash(bytes)</span>
 <span class="sd">                               and errormessage(str) arguments.</span>
 <span class="sd">        :param str dir: directory where file will be saved.</span>
 <span class="sd">        :return: 0 if success</span>
@@ -156,7 +156,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        unregister a hash and stop sending/downloading  file.</span>
 
-<span class="sd">        :param bytearray hash: acceputable file hash to be unregistered.</span>
+<span class="sd">        :param bytes hash: acceputable file hash to be unregistered.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">utpbinder</span><span class="o">.</span><span class="n">set_stopflag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cobj</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
@@ -167,7 +167,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get downloaded/uploaded size.</span>
 
-<span class="sd">        :param bytearray hash: file hash to be checked.</span>
+<span class="sd">        :param bytes hash: file hash to be checked.</span>
 <span class="sd">        :return: downloaded/uploaded file size</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">utpbinder</span><span class="o">.</span><span class="n">set_stopflag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cobj</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -183,7 +183,7 @@
 <span class="sd">        :param str dest: destination ip address.</span>
 <span class="sd">        :param int port: destination port to be sent.</span>
 <span class="sd">        :param str fname: file name to be sent.</span>
-<span class="sd">        :param bytearray hash: file hash.</span>
+<span class="sd">        :param bytes hash: file hash.</span>
 <span class="sd">        :param method handler: Handler called when finishing uploading.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">utpbinder</span><span class="o">.</span><span class="n">set_stopflag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cobj</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>

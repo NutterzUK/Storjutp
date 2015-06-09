@@ -111,7 +111,7 @@ stop a thread, and run a thread again in all functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hash</strong> (<em>bytearray</em>) &#8211; file hash to be checked.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hash</strong> (<em>bytes</em>) &#8211; file hash to be checked.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">downloaded/uploaded file size</td>
 </tr>
@@ -142,9 +142,9 @@ stop a thread, and run a thread again in all functions.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; acceputable file hash.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; acceputable file hash.</li>
 <li><strong>handler</strong> (<em>method</em>) &#8211; Handler called when finish receiving a file.
-handler method must have hash(bytearray)
+handler method must have hash(bytes)
 and errormessage(str) arguments.</li>
 <li><strong>dir</strong> (<em>str</em>) &#8211; directory where file will be saved.</li>
 </ul>
@@ -169,7 +169,7 @@ and errormessage(str) arguments.</li>
 <li><strong>dest</strong> (<em>str</em>) &#8211; destination ip address.</li>
 <li><strong>port</strong> (<em>int</em>) &#8211; destination port to be sent.</li>
 <li><strong>fname</strong> (<em>str</em>) &#8211; file name to be sent.</li>
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; file hash.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; file hash.</li>
 <li><strong>handler</strong> (<em>method</em>) &#8211; Handler called when finishing uploading.</li>
 </ul>
 </td>
@@ -192,7 +192,7 @@ and errormessage(str) arguments.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hash</strong> (<em>bytearray</em>) &#8211; acceputable file hash to be unregistered.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hash</strong> (<em>bytes</em>) &#8211; acceputable file hash to be unregistered.</td>
 </tr>
 </tbody>
 </table>

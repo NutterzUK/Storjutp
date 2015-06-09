@@ -17,9 +17,9 @@ def regist_hash(cobj, hash, handler, dir):
     register acceptable file hash.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param bytearray hash: acceputable file hash.
+    :param bytes hash: acceputable file hash.
     :param method handler: Handler called when finish receiving a file.
-    handler method must have hash(bytearray) and errormessage(str)
+    handler method must have hash(bytes) and errormessage(str)
     arguments.
     :param str dir:  directory where file will be saved.
     :return 0 if success
@@ -42,7 +42,7 @@ def stop_hash(cobj, hash):
     unregister a hash and stop sending/downloading  file.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param bytearray hash: acceputable file hash to be unregistered.
+    :param bytes hash: acceputable file hash to be unregistered.
     """
     pass
 
@@ -82,7 +82,7 @@ def send_file(cobj, dest, port, fname, hash, handler):
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
     :param int port: destination port to be sent.
     :param str fname: file name to be sent.
-    :param bytearray hash: file hash.
+    :param bytes hash: file hash.
     :param method handler: Handler called when finishing uploading.
      """
     pass
@@ -93,7 +93,7 @@ def get_progress(cobj, hash):
     get downloaded/uploaded size.
 
     :param Object cobj: pointer of StorjTelehash instnace returned by init()
-    :param bytearray hash: file hash to be checked.
+    :param bytes hash: file hash to be checked.
     :return: downloaded/uploaded file size
      """
     pass

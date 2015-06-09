@@ -49,6 +49,12 @@ void *logging0(const char *file, int line, const char *function,
 #define LOG(fmt, ...)  logging0(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+    #define BYTES "y"
+#else
+    #define BYTES "z"
+#endif
+
 void EvaluatePyObject(PyObject *obj, unsigned char hash[32], 
                         const char *errorMessage){
     PyGILState_STATE gstate;
@@ -57,11 +63,7 @@ void EvaluatePyObject(PyObject *obj, unsigned char hash[32],
     if(!PyCallable_Check(obj)){
         LOG("not callable object");
     }
-#if PY_MAJOR_VERSION >= 3
-    PyObject *arglist = Py_BuildValue("(y#z)", hash, 32, errorMessage);
-#else
-    PyObject *arglist = Py_BuildValue("(z#z)", hash, 32, errorMessage);
-#endif
+    PyObject *arglist = Py_BuildValue("("BYTES"#z)", hash, 32, errorMessage);
     if(!arglist){
         LOG("failed to build arg list");
     }
@@ -117,18 +119,17 @@ static PyObject *utpbinder_init(PyObject *self, PyObject *args){
 static PyObject *utpbinder_registHash(PyObject *self, 
                                                 PyObject *args){
     PyObject *cobj=NULL;
-    PyByteArrayObject *hash_=NULL;
+    unsigned char *hash=NULL;
     PyObject *handler=NULL;
     char *dir=NULL;
-    if (!PyArg_ParseTuple(args, "OOOs",&cobj,&hash_,&handler,&dir)){
+
+    if (!PyArg_ParseTuple(args, "O"BYTES"Os",&cobj,&hash,&handler,&dir)){
         return NULL;
     }
     if (!PyCallable_Check(handler)) {
         PyErr_SetString(PyExc_TypeError, "parameter must be callable");
         return NULL;
     } 
-    unsigned char* hash = (unsigned char *)
-                                PyByteArray_AsString((PyObject*) hash_);
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     HandlerImpl *h=new HandlerImpl(handler);
     int r = m->registHash(hash,h,dir);
@@ -148,12 +149,10 @@ static PyObject *utpbinder_getServerPort(PyObject *self,
 static PyObject *utpbinder_stopHash(PyObject *self, 
                                                    PyObject *args){
     PyObject *cobj=NULL;
-    PyByteArrayObject *hash_=NULL;
-    if (!PyArg_ParseTuple(args, "OO",&cobj,&hash_)){
+    unsigned char *hash=NULL;
+    if (!PyArg_ParseTuple(args, "O"BYTES,&cobj,&hash)){
         return NULL;
     }
-    unsigned char* hash = (unsigned char *)
-                                PyByteArray_AsString((PyObject*) hash_);
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     m->stopHash(hash);
     Py_RETURN_NONE;
@@ -165,23 +164,18 @@ static PyObject *utpbinder_sendFile(PyObject *self,
     char *dest=NULL;
     int port = 0;
     char *fname=NULL;
-    PyByteArrayObject *hash_=NULL;
+    unsigned char *hash=NULL;
     PyObject *handler=NULL;
-    if (!PyArg_ParseTuple(args, "OsisOO",&cobj,&dest,&port,&fname,
-                                        &hash_,&handler)){
+    if (!PyArg_ParseTuple(args, "Osis"BYTES"O",&cobj,&dest,&port,&fname,
+                                        &hash,&handler)){
         return NULL;
     }
     if (!PyCallable_Check(handler)) {
         PyErr_SetString(PyExc_TypeError, "parameter must be callable");
         return NULL;
     } 
-    if (!PyByteArray_Check(hash_)) {
-        PyErr_SetString(PyExc_TypeError, "parameter must be bytearray");
-        return NULL;
-    }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     HandlerImpl *h = new HandlerImpl(handler);
-    unsigned char *hash = (unsigned char*)PyByteArray_AsString((PyObject*) hash_);
     int r = m->sendFile(dest,port,fname,hash,h);
     return Py_BuildValue("i", r);
 }
@@ -217,12 +211,10 @@ static PyObject *utpbinder_setStopFlag(PyObject *self, PyObject *args){
 static PyObject *utpbinder_getProgress(PyObject *self, 
                                              PyObject *args){
     PyObject *cobj=NULL;
-    PyByteArrayObject *hash_=NULL;
-    if (!PyArg_ParseTuple(args, "OO",&cobj,&hash_)){
+    unsigned char *hash=NULL;
+    if (!PyArg_ParseTuple(args, "O"BYTES,&cobj,&hash)){
         return NULL;
     }
-    unsigned char* hash = (unsigned char *)
-                             PyByteArray_AsString((PyObject*) hash_);
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
     size_t s = m->getProgress(hash);
     return Py_BuildValue("k", s);

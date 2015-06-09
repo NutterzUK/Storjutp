@@ -33,6 +33,7 @@ import time
 import logging
 import filecmp
 import os
+import binascii
 
 from storjutp.storjutp import Storjutp
 
@@ -63,7 +64,8 @@ class TestStorjutp(object):
         self.receiver_finish = False
         fname = \
             'C8C9CACBCCCDCECFD0D1D2D3D4D5D6D7D8D9DADBDCDDDEDFE0E1E2E3E4E5E6E7'
-        dummy = bytearray([i for i in range(200, 232)])
+        dummy = binascii.unhexlify(fname)
+        logging.debug(dummy)
 
         if os.path.exists(fname):
             os.remove(fname)
