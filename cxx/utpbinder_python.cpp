@@ -49,6 +49,13 @@ void *logging0(const char *file, int line, const char *function,
 #define LOG(fmt, ...)  logging0(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__)
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+    #define PYBUF "y*"
+#else
+    #define PYBUF "s*"
+#endif
+
+
 void EvaluatePyObject(PyObject *obj, unsigned char hash[32], 
                         const char *errorMessage){
     PyGILState_STATE gstate;
@@ -122,7 +129,7 @@ static PyObject *utpbinder_registHash(PyObject *self,
     PyObject *handler=NULL;
     char *dir=NULL;
 
-    if (!PyArg_ParseTuple(args, "Oy*Os",&cobj,&hash,&handler,&dir)){
+    if (!PyArg_ParseTuple(args, "O"PYBUF"Os",&cobj,&hash,&handler,&dir)){
         return NULL;
     }
     if (!PyCallable_Check(handler)) {
@@ -150,7 +157,7 @@ static PyObject *utpbinder_stopHash(PyObject *self,
                                                    PyObject *args){
     PyObject *cobj=NULL;
     Py_buffer hash;
-    if (!PyArg_ParseTuple(args, "Oy*",&cobj,&hash)){
+    if (!PyArg_ParseTuple(args, "O"PYBUF,&cobj,&hash)){
         return NULL;
     }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
@@ -167,7 +174,7 @@ static PyObject *utpbinder_sendFile(PyObject *self,
     char *fname=NULL;
     char *dest=NULL;
     PyObject *handler=NULL;
-    if (!PyArg_ParseTuple(args, "Osisy*O",&cobj,&dest,&port,&fname,
+    if (!PyArg_ParseTuple(args, "Osis"PYBUF"O",&cobj,&dest,&port,&fname,
                                         &hash,&handler)){
         return NULL;
     }
@@ -214,7 +221,7 @@ static PyObject *utpbinder_getProgress(PyObject *self,
                                              PyObject *args){
     PyObject *cobj=NULL;
     Py_buffer hash;
-    if (!PyArg_ParseTuple(args, "Oy*",&cobj,&hash)){
+    if (!PyArg_ParseTuple(args, "O"PYBUF,&cobj,&hash)){
         return NULL;
     }
     Storjutp *m=(Storjutp *)PyCapsule_GetPointer(cobj,NULL);
