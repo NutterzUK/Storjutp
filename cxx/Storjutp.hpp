@@ -205,6 +205,7 @@ public:
      * constructor.
      */
     ReceiveFileInfo();
+
     /**
      * destructor.
      */
@@ -223,6 +224,11 @@ public:
      */
     size_t getProgress();
 
+    /**
+     * close file pointer.
+     * 
+     */
+    void closeFP();
 };
 
 /**

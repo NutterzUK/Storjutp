@@ -67,9 +67,9 @@ class Storjutp(object):
         """
         register acceptable file hash.
 
-        :param bytearray hash: acceputable file hash.
+        :param bytes hash: acceputable file hash.
         :param method handler: Handler called when finish receiving a file.
-                               handler method must have hash(bytearray)
+                               handler method must have hash(bytes)
                                and errormessage(str) arguments.
         :param str dir: directory where file will be saved.
         :return: 0 if success
@@ -84,7 +84,7 @@ class Storjutp(object):
         """
         unregister a hash and stop sending/downloading  file.
 
-        :param bytearray hash: acceputable file hash to be unregistered.
+        :param bytes hash: acceputable file hash to be unregistered.
         """
         utpbinder.set_stopflag(self.cobj, 1)
         self.thread.join()
@@ -95,7 +95,7 @@ class Storjutp(object):
         """
         get downloaded/uploaded size.
 
-        :param bytearray hash: file hash to be checked.
+        :param bytes hash: file hash to be checked.
         :return: downloaded/uploaded file size
         """
         utpbinder.set_stopflag(self.cobj, 1)
@@ -111,7 +111,7 @@ class Storjutp(object):
         :param str dest: destination ip address.
         :param int port: destination port to be sent.
         :param str fname: file name to be sent.
-        :param bytearray hash: file hash.
+        :param bytes hash: file hash.
         :param method handler: Handler called when finishing uploading.
         """
         utpbinder.set_stopflag(self.cobj, 1)

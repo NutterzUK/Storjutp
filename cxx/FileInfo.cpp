@@ -113,6 +113,11 @@ ReceiveFileInfo::ReceiveFileInfo(){
     size = 0;
  }
 
+void ReceiveFileInfo::closeFP(){
+    if(fp) fclose(fp);
+    fp = NULL;
+}
+
 ReceiveFileInfo::~ReceiveFileInfo(){
     if(fp) fclose(fp);
 }

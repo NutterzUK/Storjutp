@@ -33,6 +33,7 @@ import time
 import logging
 import filecmp
 import os
+import binascii
 
 from storjutp.storjutp import Storjutp
 
@@ -58,12 +59,20 @@ class TestStorjutp(object):
         assert errorMessage is None
         self.receiver_finish = True
 
+    def handler_receiver_error(self, hash, errorMessage):
+        logging.debug("receiver finished with error")
+        if errorMessage is not None:
+            logging.debug(" errorMessage:" + errorMessage)
+
+        assert errorMessage is not None
+
     def test_storjutp(self):
         self.sender_finish = False
         self.receiver_finish = False
         fname = \
             'C8C9CACBCCCDCECFD0D1D2D3D4D5D6D7D8D9DADBDCDDDEDFE0E1E2E3E4E5E6E7'
-        dummy = bytearray([i for i in range(200, 232)])
+        dummy = binascii.unhexlify(fname)
+        logging.debug(dummy)
 
         if os.path.exists(fname):
             os.remove(fname)
@@ -72,12 +81,14 @@ class TestStorjutp(object):
         s2 = Storjutp()
         assert s1.get_serverport() == 12345
 
-        s1.regist_hash(dummy, self.handler_receiver)
+        s1.regist_hash(dummy, self.handler_receiver_error)
         r = s1.regist_hash(dummy, self.handler_receiver)
         assert r
         s1.stop_hash(dummy)
+        return
         r = s1.regist_hash(dummy, self.handler_receiver)
         assert not r
+        time.sleep(5)
 
         s2.send_file('127.0.0.1', 12345, 'tests/rand.dat', dummy,
                      self.handler_sender)

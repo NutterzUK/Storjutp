@@ -108,7 +108,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>cobj</strong> (<em>Object</em>) &#8211; pointer of StorjTelehash instnace returned by init()</li>
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; file hash to be checked.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; file hash to be checked.</li>
 </ul>
 </td>
 </tr>
@@ -159,14 +159,14 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>cobj</strong> (<em>Object</em>) &#8211; pointer of StorjTelehash instnace returned by init()</li>
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; acceputable file hash.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; acceputable file hash.</li>
 <li><strong>handler</strong> (<em>method</em>) &#8211; Handler called when finish receiving a file.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>handler method must have hash(bytearray) and errormessage(str)
+<p>handler method must have hash(bytes) and errormessage(str)
 arguments.
 :param str dir:  directory where file will be saved.
 :return 0 if success</p>
@@ -184,7 +184,7 @@ arguments.
 <li><strong>cobj</strong> (<em>Object</em>) &#8211; pointer of StorjTelehash instnace returned by init()</li>
 <li><strong>port</strong> (<em>int</em>) &#8211; destination port to be sent.</li>
 <li><strong>fname</strong> (<em>str</em>) &#8211; file name to be sent.</li>
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; file hash.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; file hash.</li>
 <li><strong>handler</strong> (<em>method</em>) &#8211; Handler called when finishing uploading.</li>
 </ul>
 </td>
@@ -235,7 +235,7 @@ arguments.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>cobj</strong> (<em>Object</em>) &#8211; pointer of StorjTelehash instnace returned by init()</li>
-<li><strong>hash</strong> (<em>bytearray</em>) &#8211; acceputable file hash to be unregistered.</li>
+<li><strong>hash</strong> (<em>bytes</em>) &#8211; acceputable file hash to be unregistered.</li>
 </ul>
 </td>
 </tr>
