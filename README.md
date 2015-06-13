@@ -27,7 +27,7 @@ To run the associated tests:
 
 To run the associated tests for python:
 
-    $ coverage run setup.py test -a "--doctest-modules --pep8 -v tests/ storjutp/"
+    $ python setup.py test -a "--doctest-modules --pep8 -v tests/ storjutp/"
 
 for Windows OS, [Cygwin](https://www.cygwin.com/) must be installed first.
 
